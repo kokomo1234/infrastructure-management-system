@@ -1,12 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@/lib/api';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiService, TokenManager, User, LoginRequest } from '../lib/api';
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  isLoading: boolean;
+  isAuthenticated: boolean;
   updateUser: (userData: Partial<User>) => void;
 }
 
@@ -20,86 +21,81 @@ export const useAuth = () => {
   return context;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const isAuthenticated = !!user && !!TokenManager.getToken();
 
   useEffect(() => {
-    // Check for existing auth token on mount
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user_data');
-    
-    if (token && userData) {
+    // Check if user is already logged in
+    const checkAuth = async () => {
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+        const token = TokenManager.getToken();
+        if (token && !TokenManager.isTokenExpired(token)) {
+          // Get current user from API
+          const currentUser = await apiService.getCurrentUser();
+          setUser(currentUser);
+        } else {
+          // Clear expired or invalid tokens
+          TokenManager.clearTokens();
+        }
       } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_data');
+        console.error('Auth check failed:', error);
+        TokenManager.clearTokens();
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    
-    setIsLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
-    setIsLoading(true);
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // For now, we'll simulate authentication since the backend doesn't have auth endpoints yet
-      // In a real implementation, this would call your backend auth API
+      setIsLoading(true);
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const credentials: LoginRequest = { email, password };
+      const response = await apiService.login(credentials);
       
-      // Mock user data - replace with actual API call
-      const mockUser: User = {
-        id: '1',
-        email: email,
-        first_name: 'Utilisateur',
-        last_name: 'Admin',
-        display_name: 'Utilisateur Admin',
-        department: 'Infrastructure',
-        position: 'Gestionnaire',
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      // Mock token
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-      setUser(mockUser);
+      setUser(response.user);
+      return true;
     } catch (error) {
-      throw new Error('Échec de la connexion. Vérifiez vos identifiants.');
+      console.error('Login failed:', error);
+      TokenManager.clearTokens();
+      setUser(null);
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    setUser(null);
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      await apiService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      TokenManager.clearTokens();
+      setUser(null);
+      setIsLoading(false);
+      navigate('/login');
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-      localStorage.setItem('user_data', JSON.stringify(updatedUser));
     }
   };
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     login,
     logout,
