@@ -294,10 +294,10 @@ const TDLDetail = () => {
             <Card.Header className="bg-warning text-dark">
               <h5 className="mb-0">⚡ Besoins AC</h5>
             </Card.Header>
-            <Card.Body className="p-4">
-              <Row>
+            <Card.Body className="p-4" style={{ minHeight: '500px' }}>
+              <Row className="h-100">
                 {/* Left Section - AC Equipment and Load Analysis */}
-                <Col lg={5} className="mb-4">
+                <Col lg={5} className="d-flex flex-column h-100">
                   {/* AC Equipment Cards */}
                   <div className="mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-3">
@@ -414,33 +414,30 @@ const TDLDetail = () => {
                 </Col>
 
                 {/* Right Section - Graph and Future Section */}
-                <Col lg={7}>
-                  <Row>
-                    {/* Graph - 65% of right section */}
-                    <Col lg={8} className="mb-4">
-                      <div className="bg-primary bg-opacity-10 p-4 rounded h-100 d-flex align-items-center justify-content-center" style={{ minHeight: '300px' }}>
-                        <div className="text-center text-primary">
-                          <i className="fas fa-chart-line fa-4x mb-3"></i>
-                          <h5 className="mb-2">Graphique avec besoins AC et</h5>
-                          <h5 className="mb-2">alimentation AC sur les</h5>
-                          <h5 className="mb-3">5 prochaines années</h5>
-                          <small className="text-muted">(À implémenter)</small>
-                        </div>
+                <Col lg={7} className="d-flex flex-column h-100">
+                  {/* Graph Section - Takes most of the vertical space */}
+                  <div className="flex-grow-1 mb-3">
+                    <div className="bg-primary bg-opacity-10 p-4 rounded h-100 d-flex align-items-center justify-content-center">
+                      <div className="text-center text-primary">
+                        <i className="fas fa-chart-line fa-4x mb-3"></i>
+                        <h5 className="mb-2">Graphique avec besoins AC et</h5>
+                        <h5 className="mb-2">alimentation AC sur les</h5>
+                        <h5 className="mb-3">5 prochaines années</h5>
+                        <small className="text-muted">(À implémenter)</small>
                       </div>
-                    </Col>
+                    </div>
+                  </div>
 
-                    {/* Future Section - 35% of right section */}
-                    <Col lg={4} className="mb-4">
-                      <div className="border border-2 border-dashed p-3 rounded h-100 d-flex align-items-center justify-content-center" style={{ minHeight: '300px' }}>
-                        <div className="text-center text-muted">
-                          <i className="fas fa-plus-circle fa-2x mb-3"></i>
-                          <h6 className="mb-1">Créer une section,</h6>
-                          <h6 className="mb-1">mais laisser vide</h6>
-                          <h6 className="mb-0">pour l'instant</h6>
-                        </div>
+                  {/* Future Section - Takes remaining vertical space */}
+                  <div style={{ height: '120px' }}>
+                    <div className="border border-2 border-dashed p-3 rounded h-100 d-flex align-items-center justify-content-center">
+                      <div className="text-center text-muted">
+                        <i className="fas fa-plus-circle fa-2x mb-2"></i>
+                        <h6 className="mb-1">Créer une section,</h6>
+                        <h6 className="mb-0">mais laisser vide pour l'instant</h6>
                       </div>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </Col>
               </Row>
             </Card.Body>
