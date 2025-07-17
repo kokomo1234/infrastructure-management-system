@@ -22,6 +22,7 @@ app.use('/api/autre', require('./routes/autre'));
 app.use('/api/besoin', require('./routes/besoin'));
 app.use('/api/fournisseurs', require('./routes/fournisseurs'));
 app.use('/api/fabricant', require('./routes/fabricant'));
+app.use('/api/migration', require('./routes/migration'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

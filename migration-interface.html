@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration de Base de Données - Infrastructure Management</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .button.success {
+            background: #28a745;
+        }
+        .button.danger {
+            background: #dc3545;
+        }
+        .progress-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 20px 0;
+        }
+        .progress-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .progress-item.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .progress-item.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .progress-item.running {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .progress-item.info {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-indicator.running {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+        .status-indicator.completed {
+            background: #28a745;
+        }
+        .status-indicator.error {
+            background: #dc3545;
+        }
+        .status-indicator.idle {
+            background: #6c757d;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .verification-results {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Migration de Base de Données</h1>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 30px;">
+            Système de Gestion d'Infrastructure - Amélioration du Schéma
+        </p>
+
+        <div class="grid">
+            <div class="status-card">
+                <h3>📊 Statut de la Migration</h3>
+                <div id="migrationStatus">
+                    <span class="status-indicator idle"></span>
+                    <span>En attente</span>
+                </div>
+                <div id="migrationTiming" style="margin-top: 10px; font-size: 14px; color: #6c757d;"></div>
+            </div>
+
+            <div class="status-card">
+                <h3>🎯 Actions</h3>
+                <button id="checkStatusBtn" class="button">Vérifier le Statut</button>
+                <button id="executeMigrationBtn" class="button">Exécuter la Migration</button>
+                <button id="verifyBtn" class="button success">Vérifier le Schéma</button>
+            </div>
+        </div>
+
+        <div id="progressSection" style="display: none;">
+            <h3>📝 Progression de la Migration</h3>
+            <div id="progressLog" class="progress-log"></div>
+        </div>
+
+        <div id="verificationSection" style="display: none;">
+            <h3>✅ Résultats de Vérification</h3>
+            <div id="verificationResults" class="verification-results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/migration';
+        
+        // DOM elements
+        const migrationStatusEl = document.getElementById('migrationStatus');
+        const migrationTimingEl = document.getElementById('migrationTiming');
+        const checkStatusBtn = document.getElementById('checkStatusBtn');
+        const executeMigrationBtn = document.getElementById('executeMigrationBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const progressSection = document.getElementById('progressSection');
+        const progressLog = document.getElementById('progressLog');
+        const verificationSection = document.getElementById('verificationSection');
+        const verificationResults = document.getElementById('verificationResults');
+
+        // Event listeners
+        checkStatusBtn.addEventListener('click', checkMigrationStatus);
+        executeMigrationBtn.addEventListener('click', executeMigration);
+        verifyBtn.addEventListener('click', verifyMigration);
+
+        // Auto-refresh status every 5 seconds when migration is running
+        let statusInterval;
+
+        async function checkMigrationStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    updateStatusDisplay(data.data);
+                    updateProgressLog(data.data.progress);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification du statut:', error);
+                alert('Erreur lors de la vérification du statut');
+            }
+        }
+
+        async function executeMigration() {
+            if (!confirm('Êtes-vous sûr de vouloir exécuter la migration de la base de données?')) {
+                return;
+            }
+
+            try {
+                executeMigrationBtn.disabled = true;
+                executeMigrationBtn.textContent = 'Migration en cours...';
+                
+                const response = await fetch(`${API_BASE}/execute`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert('Migration démarrée avec succès!');
+                    progressSection.style.display = 'block';
+                    
+                    // Start auto-refresh
+                    statusInterval = setInterval(checkMigrationStatus, 2000);
+                } else {
+                    alert('Erreur: ' + data.message);
+                    executeMigrationBtn.disabled = false;
+                    executeMigrationBtn.textContent = 'Exécuter la Migration';
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'exécution de la migration:', error);
+                alert('Erreur lors de l\'exécution de la migration');
+                executeMigrationBtn.disabled = false;
+                executeMigrationBtn.textContent = 'Exécuter la Migration';
+            }
+        }
+
+        async function verifyMigration() {
+            try {
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'Vérification...';
+                
+                const response = await fetch(`${API_BASE}/verify`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayVerificationResults(data.data);
+                    verificationSection.style.display = 'block';
+                } else {
+                    alert('Erreur de vérification: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification:', error);
+                alert('Erreur lors de la vérification');
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Vérifier le Schéma';
+            }
+        }
+
+        function updateStatusDisplay(status) {
+            const indicator = migrationStatusEl.querySelector('.status-indicator');
+            const statusText = migrationStatusEl.querySelector('span:last-child');
+            
+            if (status.isRunning) {
+                indicator.className = 'status-indicator running';
+                statusText.textContent = 'Migration en cours...';
+                executeMigrationBtn.disabled = true;
+                executeMigrationBtn.textContent = 'Migration en cours...';
+            } else if (status.completed) {
+                indicator.className = 'status-indicator completed';
+                statusText.textContent = 'Migration terminée avec succès';
+                executeMigrationBtn.disabled = true;
+                executeMigrationBtn.textContent = 'Migration Terminée';
+                clearInterval(statusInterval);
+            } else if (status.error) {
+                indicator.className = 'status-indicator error';
+                statusText.textContent = 'Erreur de migration';
+                executeMigrationBtn.disabled = false;
+                executeMigrationBtn.textContent = 'Réessayer la Migration';
+                clearInterval(statusInterval);
+            } else {
+                indicator.className = 'status-indicator idle';
+                statusText.textContent = 'En attente';
+                executeMigrationBtn.disabled = false;
+                executeMigrationBtn.textContent = 'Exécuter la Migration';
+            }
+
+            // Update timing info
+            if (status.startTime) {
+                const startTime = new Date(status.startTime).toLocaleString('fr-FR');
+                let timingText = `Démarré: ${startTime}`;
+                
+                if (status.endTime) {
+                    const endTime = new Date(status.endTime).toLocaleString('fr-FR');
+                    const duration = Math.round((new Date(status.endTime) - new Date(status.startTime)) / 1000);
+                    timingText += ` | Terminé: ${endTime} | Durée: ${duration}s`;
+                }
+                
+                migrationTimingEl.textContent = timingText;
+            }
+        }
+
+        function updateProgressLog(progress) {
+            if (!progress || progress.length === 0) return;
+            
+            progressLog.innerHTML = '';
+            progress.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `progress-item ${item.status}`;
+                
+                const time = new Date(item.timestamp).toLocaleTimeString('fr-FR');
+                div.innerHTML = `<strong>[${time}]</strong> ${item.step}`;
+                
+                if (item.error) {
+                    div.innerHTML += `<br><em>Erreur: ${item.error}</em>`;
+                }
+                
+                progressLog.appendChild(div);
+            });
+            
+            // Scroll to bottom
+            progressLog.scrollTop = progressLog.scrollHeight;
+        }
+
+        function displayVerificationResults(results) {
+            verificationResults.innerHTML = `
+                <h4>📊 Résultats de Vérification</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0;">
+                    <div><strong>Colonnes TDL:</strong> ${results.tdl_columns}</div>
+                    <div><strong>Colonnes AC:</strong> ${results.ac_columns}</div>
+                    <div><strong>Nouvelles Tables:</strong> ${results.new_tables.join(', ') || 'Aucune'}</div>
+                </div>
+                
+                <h5>📈 Comptage des Données</h5>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0;">
+                    <div><strong>Sites TDL:</strong> ${results.data_counts.tdl_count}</div>
+                    <div><strong>Équipements AC:</strong> ${results.data_counts.ac_count}</div>
+                    <div><strong>Systèmes DC:</strong> ${results.data_counts.dc_count}</div>
+                </div>
+                
+                <h5>🔗 Test de Relation TDL-AC</h5>
+                <div style="font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                    ${results.relationship_test.map(r => 
+                        `${r.name}: ${r.equipment_count} équipement(s)`
+                    ).join('<br>')}
+                </div>
+                
+                <p style="margin-top: 15px; font-size: 12px; color: #6c757d;">
+                    Vérification effectuée le: ${new Date(results.verification_time).toLocaleString('fr-FR')}
+                </p>
+            `;
+        }
+
+        // Initial status check
+        checkMigrationStatus();
+    </script>
+</body>
+</html>
