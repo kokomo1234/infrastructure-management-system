@@ -107,11 +107,34 @@ router.post('/login', loginValidation, async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Find user
-    const [users] = await db.execute(
-      'SELECT id, email, password_hash, first_name, last_name, department, position, is_active, last_login FROM users WHERE email = ?',
-      [email]
-    );
+    // Find user - handle both password and password_hash column names
+    let users, passwordField;
+    
+    try {
+      // Try password_hash first (new schema)
+      const [usersWithHash] = await db.execute(
+        'SELECT id, email, password_hash, first_name, last_name, department, position, is_active, last_login FROM users WHERE email = ?',
+        [email]
+      );
+      users = usersWithHash;
+      passwordField = 'password_hash';
+    } catch (error) {
+      // If password_hash column doesn't exist, try password column (old schema)
+      try {
+        const [usersWithPassword] = await db.execute(
+          'SELECT id, email, password, first_name, last_name, department, position, is_active, last_login FROM users WHERE email = ?',
+          [email]
+        );
+        users = usersWithPassword;
+        passwordField = 'password';
+      } catch (secondError) {
+        console.error('Login error - unable to query users table:', secondError);
+        return res.status(500).json({
+          error: 'Database error',
+          code: 'DATABASE_ERROR'
+        });
+      }
+    }
 
     if (users.length === 0) {
       return res.status(401).json({
@@ -130,8 +153,9 @@ router.post('/login', loginValidation, async (req, res) => {
       });
     }
 
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    // Verify password using the correct field
+    const storedPassword = user[passwordField];
+    const isValidPassword = await bcrypt.compare(password, storedPassword);
     if (!isValidPassword) {
       return res.status(401).json({
         error: 'Invalid email or password',
