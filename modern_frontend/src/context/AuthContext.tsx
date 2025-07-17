@@ -38,14 +38,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (token && !TokenManager.isTokenExpired(token)) {
           console.log('✅ AuthContext: Token is valid, fetching user...');
-          // Get current user from API
-          const currentUser = await apiService.getCurrentUser();
-          console.log('👤 AuthContext: User fetched successfully:', currentUser.email);
-          setUser(currentUser);
+          try {
+            // Get current user from API
+            const currentUser = await apiService.getCurrentUser();
+            console.log('👤 AuthContext: User fetched successfully:', currentUser.email);
+            setUser(currentUser);
+          } catch (apiError) {
+            console.error('🚨 AuthContext: API call failed, backend might not be configured:', apiError);
+            // If API call fails, clear tokens and continue without crashing
+            TokenManager.clearTokens();
+            setUser(null);
+          }
         } else {
           console.log('❌ AuthContext: Token expired or invalid, clearing tokens');
           // Clear expired or invalid tokens
           TokenManager.clearTokens();
+          setUser(null);
         }
       } catch (error) {
         console.error('💥 AuthContext: Auth check failed:', error);
@@ -57,7 +65,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    checkAuth();
+    // Add error handling for the entire effect
+    checkAuth().catch((error) => {
+      console.error('🚨 AuthContext: Critical error in auth check:', error);
+      setIsLoading(false);
+      setUser(null);
+    });
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {

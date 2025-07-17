@@ -2,19 +2,43 @@ import { useQuery } from '@tanstack/react-query';
 import { Building2, Wrench, AlertTriangle, Activity } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { apiService } from '@/lib/api';
-import { formatCapacity, getStatusColor, calculateUtilization, getUtilizationColor } from '@/lib/utils';
+import { apiService, TDLSite } from '../lib/api';
+import { formatCapacity, calculateUtilization, getUtilizationColor, getStatusColor } from '@/lib/utils';
 
 const Dashboard = () => {
   // Fetch data from backend
   const { data: tdlSites, isLoading: tdlLoading } = useQuery({
     queryKey: ['tdl-sites'],
-    queryFn: () => apiService.getTDLSites().then(res => res.data),
+    queryFn: async () => {
+      try {
+        console.log('🔍 Dashboard: Fetching TDL sites...');
+        const result = await apiService.getTDLSites();
+        console.log('✅ Dashboard: TDL sites fetched successfully:', result?.length || 0);
+        return result || [];
+      } catch (error) {
+        console.error('💥 Dashboard: TDL sites fetch failed:', error);
+        return [];
+      }
+    },
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const { data: acEquipment, isLoading: acLoading } = useQuery({
     queryKey: ['ac-equipment'],
-    queryFn: () => apiService.getACEquipment().then(res => res.data),
+    queryFn: async () => {
+      try {
+        console.log('🔍 Dashboard: Fetching AC equipment...');
+        const result = await apiService.getACEquipment();
+        console.log('✅ Dashboard: AC equipment fetched successfully:', result?.length || 0);
+        return result || [];
+      } catch (error) {
+        console.error('💥 Dashboard: AC equipment fetch failed:', error);
+        return [];
+      }
+    },
+    retry: 1,
+    retryDelay: 1000,
   });
 
   // Work orders query removed - not currently used in dashboard display
@@ -30,21 +54,29 @@ const Dashboard = () => {
   let utilizationPercentage = 0;
   
   try {
-    totalCapacity = tdlSites?.reduce((sum, site) => {
+    totalCapacity = tdlSites?.reduce((sum: number, site: TDLSite) => {
       const capacity = site.total_capacity_kw || 0;
       return sum + (typeof capacity === 'number' ? capacity : 0);
     }, 0) || 0;
-    
-    usedCapacity = tdlSites?.reduce((sum, site) => {
+  } catch (error) {
+    console.error('Error calculating total capacity:', error);
+    totalCapacity = 0;
+  }
+
+  try {
+    usedCapacity = tdlSites?.reduce((sum: number, site: TDLSite) => {
       const used = site.used_capacity_kw || 0;
       return sum + (typeof used === 'number' ? used : 0);
     }, 0) || 0;
-    
+  } catch (error) {
+    console.error('Error calculating used capacity:', error);
+    usedCapacity = 0;
+  }
+
+  try {
     utilizationPercentage = calculateUtilization(usedCapacity, totalCapacity);
   } catch (error) {
     console.error('Error calculating metrics:', error);
-    totalCapacity = 0;
-    usedCapacity = 0;
     utilizationPercentage = 0;
   }
 
@@ -173,7 +205,7 @@ const Dashboard = () => {
                     <div className="h-2 w-2 rounded-full bg-green-500"></div>
                     <div>
                       <p className="text-sm font-medium">{site.name}</p>
-                      <p className="text-xs text-gray-500">{site.region}</p>
+                      <p className="text-xs text-gray-500">{site.location}</p>
                     </div>
                   </div>
                   <div className="text-right">
