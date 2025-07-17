@@ -68,9 +68,9 @@ router.post('/create', async (req, res) => {
     
     console.log('Creating admin user...');
     
-    // Use a simple INSERT that should work with most schemas
+    // Use password_hash column (detected from earlier logs)
     const [result] = await db.execute(`
-      INSERT INTO users (email, password, first_name, last_name, department, position, is_active)
+      INSERT INTO users (email, password_hash, first_name, last_name, department, position, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
       'admin@infrastructure.com',
