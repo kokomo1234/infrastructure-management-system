@@ -201,7 +201,32 @@ router.post('/initialize', allowInitializationOnly, async (req, res) => {
       });
     }
     
-    // Step 3: Create initial admin user
+    // Step 3: Check existing users table schema and adapt
+    initializationSteps.push({
+      step: 'Checking users table schema',
+      timestamp: new Date().toISOString(),
+      status: 'running'
+    });
+    
+    const [userColumns] = await db.execute(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+    `);
+    
+    const columnNames = userColumns.map(col => col.COLUMN_NAME);
+    const hasPasswordHash = columnNames.includes('password_hash');
+    const hasPassword = columnNames.includes('password');
+    const hasId = columnNames.includes('id');
+    const hasEmail = columnNames.includes('email');
+    
+    initializationSteps.push({
+      step: `Users table schema detected: ${columnNames.join(', ')}`,
+      timestamp: new Date().toISOString(),
+      status: 'success'
+    });
+    
+    // Step 4: Create initial admin user with appropriate schema
     initializationSteps.push({
       step: 'Creating initial admin user',
       timestamp: new Date().toISOString(),
@@ -213,18 +238,43 @@ router.post('/initialize', allowInitializationOnly, async (req, res) => {
     const adminPassword = 'Admin123!';
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
     
-    await db.execute(`
-      INSERT INTO users (id, email, password_hash, first_name, last_name, department, position, is_active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-    `, [
-      adminId,
-      adminEmail,
-      hashedPassword,
-      'Admin',
-      'System',
-      'Administration',
-      'System Administrator'
-    ]);
+    // Adapt INSERT query based on existing schema
+    let insertQuery;
+    let insertValues;
+    
+    if (hasPasswordHash && hasId) {
+      // New schema with password_hash and id
+      insertQuery = `
+        INSERT INTO users (id, email, password_hash, first_name, last_name, department, position, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+      `;
+      insertValues = [adminId, adminEmail, hashedPassword, 'Admin', 'System', 'Administration', 'System Administrator'];
+    } else if (hasPassword && hasId) {
+      // Schema with password and id
+      insertQuery = `
+        INSERT INTO users (id, email, password, first_name, last_name, department, position, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+      `;
+      insertValues = [adminId, adminEmail, hashedPassword, 'Admin', 'System', 'Administration', 'System Administrator'];
+    } else if (hasPasswordHash && !hasId) {
+      // Schema with password_hash but no id (auto-increment)
+      insertQuery = `
+        INSERT INTO users (email, password_hash, first_name, last_name, department, position, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+      `;
+      insertValues = [adminEmail, hashedPassword, 'Admin', 'System', 'Administration', 'System Administrator'];
+    } else if (hasPassword && !hasId) {
+      // Schema with password but no id (auto-increment)
+      insertQuery = `
+        INSERT INTO users (email, password, first_name, last_name, department, position, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+      `;
+      insertValues = [adminEmail, hashedPassword, 'Admin', 'System', 'Administration', 'System Administrator'];
+    } else {
+      throw new Error('Unsupported users table schema - missing required columns');
+    }
+    
+    await db.execute(insertQuery, insertValues);
     
     initializationSteps.push({
       step: 'Initial admin user created successfully',
@@ -232,7 +282,7 @@ router.post('/initialize', allowInitializationOnly, async (req, res) => {
       status: 'success'
     });
     
-    // Step 4: Verify initialization
+    // Step 5: Verify initialization
     const [finalUserCount] = await db.execute('SELECT COUNT(*) as count FROM users');
     
     initializationSteps.push({
