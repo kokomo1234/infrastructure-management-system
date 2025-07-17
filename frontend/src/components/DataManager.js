@@ -4,6 +4,8 @@ import {
   Row, Col, Card, ButtonGroup 
 } from 'react-bootstrap';
 import apiService from '../services/api';
+import AuthModal from './AuthModal';
+import { useProtectedAction } from '../hooks/useProtectedAction';
 
 const DataManager = ({ 
   title, 
@@ -21,6 +23,15 @@ const DataManager = ({
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
+  
+  // Security: Protected actions hook
+  const {
+    showAuthModal,
+    pendingAction,
+    executeProtectedAction,
+    handleAuthSuccess,
+    handleAuthClose
+  } = useProtectedAction();
 
   useEffect(() => {
     fetchData();
@@ -40,29 +51,38 @@ const DataManager = ({
     }
   };
 
+  // Security: Protected create action
   const handleCreate = () => {
-    setEditingItem(null);
-    setFormData({});
-    setShowModal(true);
+    executeProtectedAction(() => {
+      setEditingItem(null);
+      setFormData({});
+      setShowModal(true);
+    }, 'create');
   };
 
+  // Security: Protected edit action
   const handleEdit = (item) => {
-    setEditingItem(item);
-    setFormData({ ...item });
-    setShowModal(true);
+    executeProtectedAction(() => {
+      setEditingItem(item);
+      setFormData({ ...item });
+      setShowModal(true);
+    }, 'edit');
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        await apiService.delete(endpoint, id);
-        setSuccess('Record deleted successfully');
-        fetchData();
-      } catch (err) {
-        setError('Failed to delete record');
-        console.error('Delete error:', err);
+  // Security: Protected delete action
+  const handleDelete = (id) => {
+    executeProtectedAction(async () => {
+      if (window.confirm('⚠️ Are you sure you want to delete this record? This action cannot be undone.')) {
+        try {
+          await apiService.delete(endpoint, id);
+          setSuccess('🗑️ Record deleted successfully');
+          fetchData();
+        } catch (err) {
+          setError('❌ Failed to delete record');
+          console.error('Delete error:', err);
+        }
       }
-    }
+    }, 'delete');
   };
 
   const handleSubmit = async (e) => {
@@ -231,6 +251,14 @@ const DataManager = ({
           </Modal.Footer>
         </Form>
       </Modal>
+
+      {/* Security: Authentication Modal */}
+      <AuthModal
+        show={showAuthModal}
+        onHide={handleAuthClose}
+        onSuccess={handleAuthSuccess}
+        action={pendingAction?.actionType || 'edit'}
+      />
     </div>
   );
 };
