@@ -24,6 +24,7 @@ app.use('/api/fournisseurs', require('./routes/fournisseurs'));
 app.use('/api/fabricant', require('./routes/fabricant'));
 app.use('/api/migration', require('./routes/migration'));
 app.use('/api/migration', require('./routes/fix-capacity-calculation'));
+app.use('/api/migration', require('./routes/fix-tdl-id-types'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
