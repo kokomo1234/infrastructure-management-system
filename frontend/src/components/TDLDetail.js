@@ -23,7 +23,19 @@ const TDLDetail = () => {
       
       // Fetch AC equipment for this TDL
       const acResponse = await apiService.getAll('ac');
-      const tdlAcEquipment = acResponse.data.filter(ac => ac.TDL_id === parseInt(id));
+      
+      // Handle TDL ID mapping due to database schema inconsistency:
+      // TDL table uses string IDs ('T1', 'T2', 'T3') but AC table uses numeric TDL_id (1, 2, 3)
+      const tdlIdMapping = {
+        'T1': 1,
+        'T2': 2,
+        'T3': 3
+      };
+      
+      const numericTdlId = tdlIdMapping[id];
+      const tdlAcEquipment = numericTdlId ? 
+        acResponse.data.filter(ac => ac.TDL_id === numericTdlId) : [];
+      
       setAcEquipment(tdlAcEquipment);
       
       setError(null);
@@ -288,7 +300,12 @@ const TDLDetail = () => {
                 <Col lg={5} className="mb-4">
                   {/* AC Equipment Cards */}
                   <div className="mb-4">
-                    <h6 className="mb-3 text-primary">📋 Équipement AC pour ce TDL</h6>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="mb-0 text-primary">📋 Équipement AC pour ce TDL</h6>
+                      <Badge bg="info" className="ms-2">
+                        {acEquipment.length} équipement{acEquipment.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
                     {acEquipment.length > 0 ? (
                       <div className="bg-light p-3 rounded">
                         {acEquipment.map((ac) => (
@@ -297,32 +314,49 @@ const TDLDetail = () => {
                               <div className="d-flex justify-content-between align-items-start mb-2">
                                 <div>
                                   <h6 className="mb-1 text-dark">{ac.nom}</h6>
-                                  <small className="text-muted">ID: {ac.id}</small>
+                                  <small className="text-muted">ID: {ac.id} | TDL_id: {ac.TDL_id}</small>
                                 </div>
                                 <Badge bg={ac.type === 'UPS' ? 'success' : 'info'} className="ms-2">
                                   {ac.type}
                                 </Badge>
                               </div>
                               <div className="small mb-2">
-                                <div className="mb-1"><strong>Sortie AC:</strong> {ac.output_ac?.toLocaleString()} W</div>
+                                <div className="mb-1">
+                                  <strong>Capacité AC:</strong> 
+                                  <span className="text-primary fw-bold ms-1">
+                                    {ac.output_ac?.toLocaleString()} W
+                                  </span>
+                                </div>
                                 <div className="mb-1"><strong>Tension:</strong> {ac.voltage} V</div>
                                 <div className="mb-1"><strong>Phase:</strong> {ac.phase}</div>
+                                <div className="mb-1"><strong>Puissance Totale:</strong> {ac.puissance_tot?.toLocaleString()} W</div>
                               </div>
                               <div className="d-flex justify-content-between align-items-center">
                                 <Badge bg="outline-secondary" text="dark">SLA: {ac.SLA}%</Badge>
-                                {ac.fabricant_nom && (
-                                  <small className="text-muted">{ac.fabricant_nom}</small>
-                                )}
+                                <small className="text-muted">
+                                  {ac.date_inst && `Installé: ${ac.date_inst}`}
+                                </small>
                               </div>
                             </Card.Body>
                           </Card>
                         ))}
+                        
+                        {/* Total Capacity Summary */}
+                        <div className="mt-3 p-2 bg-white rounded border">
+                          <div className="d-flex justify-content-between align-items-center">
+                            <strong className="text-dark">Capacité Totale AC:</strong>
+                            <span className="text-primary fw-bold fs-5">
+                              {totalAcSupply().toLocaleString()} W
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="bg-light p-4 rounded text-center">
                         <div className="text-muted">
                           <i className="fas fa-exclamation-circle fa-2x mb-2"></i>
                           <p className="mb-0">Aucun équipement AC trouvé pour ce TDL</p>
+                          <small className="text-muted">TDL ID recherché: {id}</small>
                         </div>
                       </div>
                     )}
@@ -345,11 +379,36 @@ const TDLDetail = () => {
                         variant={acUtilization() > 80 ? 'danger' : acUtilization() > 60 ? 'warning' : 'success'}
                         now={Math.min(acUtilization(), 100)}
                         className="mb-2"
-                        style={{ height: '8px' }}
+                        style={{ height: '12px' }}
                       />
-                      <div className="d-flex justify-content-between small text-muted">
+                      <div className="d-flex justify-content-between small text-muted mb-2">
                         <span>Charge: {tdl.charge_ac?.toLocaleString()} W</span>
                         <span>Alimentation: {totalAcSupply().toLocaleString()} W</span>
+                      </div>
+                      
+                      {/* Capacity Status */}
+                      <div className="small">
+                        {totalAcSupply() > 0 ? (
+                          <div className="d-flex align-items-center">
+                            <i className={`fas fa-circle me-1 ${
+                              acUtilization() > 80 ? 'text-danger' : 
+                              acUtilization() > 60 ? 'text-warning' : 'text-success'
+                            }`}></i>
+                            <span className="text-muted">
+                              {acUtilization() > 80 ? 'Capacité critique' :
+                               acUtilization() > 60 ? 'Capacité élevée' : 'Capacité normale'}
+                              {totalAcSupply() > tdl.charge_ac ? 
+                                ` (Excédent: ${(totalAcSupply() - tdl.charge_ac).toLocaleString()} W)` :
+                                ` (Déficit: ${(tdl.charge_ac - totalAcSupply()).toLocaleString()} W)`
+                              }
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="d-flex align-items-center text-warning">
+                            <i className="fas fa-exclamation-triangle me-1"></i>
+                            <span>Aucune capacité AC disponible</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
