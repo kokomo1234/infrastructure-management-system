@@ -4,12 +4,10 @@
   
   # Directory to publish (Vite builds to 'dist')
   publish = "dist"
-  
-  # Node.js version
-  environment = { NODE_VERSION = "18" }
 
 [build.environment]
-  # Production environment variables
+  # Node.js version and production environment variables
+  NODE_VERSION = "18"
   VITE_API_URL = "https://infrastructure-management-system-production.up.railway.app/api"
   VITE_APP_NAME = "Système de Gestion d'Infrastructure"
   VITE_APP_VERSION = "1.0.0"
