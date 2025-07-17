@@ -10,6 +10,7 @@ const TDLDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [tdl, setTdl] = useState(null);
+  const [acEquipment, setAcEquipment] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,9 +20,15 @@ const TDLDetail = () => {
       setLoading(true);
       const response = await apiService.getById('tdl', id);
       setTdl(response.data);
+      
+      // Fetch AC equipment for this TDL
+      const acResponse = await apiService.getAll('ac');
+      const tdlAcEquipment = acResponse.data.filter(ac => ac.TDL_id == id);
+      setAcEquipment(tdlAcEquipment);
+      
       setError(null);
     } catch (err) {
-      setError('Failed to fetch TDL details');
+      setError('Échec du chargement des détails TDL');
       console.error('Error fetching TDL:', err);
     } finally {
       setLoading(false);
@@ -49,12 +56,24 @@ const TDLDetail = () => {
     };
   }, [tdl, totalLoad]);
 
+  // Calculate total AC supply from equipment
+  const totalAcSupply = useCallback(() => {
+    return acEquipment.reduce((total, ac) => total + (ac.output_ac || 0), 0);
+  }, [acEquipment]);
+
+  // Calculate AC utilization percentage
+  const acUtilization = useCallback(() => {
+    const supply = totalAcSupply();
+    const load = tdl?.charge_ac || 0;
+    return supply > 0 ? ((load / supply) * 100).toFixed(1) : 0;
+  }, [tdl, totalAcSupply]);
+
   if (loading) {
     return (
       <Container className="py-5">
         <div className="text-center">
           <Spinner animation="border" variant="primary" size="lg" />
-          <h4 className="mt-3">Loading TDL Details...</h4>
+          <h4 className="mt-3">Chargement des détails TDL...</h4>
         </div>
       </Container>
     );
@@ -64,14 +83,14 @@ const TDLDetail = () => {
     return (
       <Container className="py-5">
         <Alert variant="danger">
-          <Alert.Heading>Error Loading TDL</Alert.Heading>
-          <p>{error || 'TDL not found'}</p>
+          <Alert.Heading>Erreur de Chargement TDL</Alert.Heading>
+          <p>{error || 'TDL non trouvé'}</p>
           <div className="d-flex gap-2">
             <Button variant="outline-danger" onClick={fetchTDLDetail}>
-              Try Again
+              Réessayer
             </Button>
             <Button variant="secondary" onClick={() => navigate('/locations/tdl')}>
-              Back to TDL List
+              Retour à la Liste TDL
             </Button>
           </div>
         </Alert>
@@ -88,21 +107,21 @@ const TDLDetail = () => {
         <Col>
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h1 className="mb-1">🏢 TDL Site {tdl.id}</h1>
-              <p className="text-muted mb-0">Total Distribution Location - {tdl.region}</p>
+              <h1 className="mb-1">🏢 Site TDL {tdl.id}</h1>
+              <p className="text-muted mb-0">Emplacement de Distribution Totale - {tdl.region}</p>
             </div>
             <div className="d-flex gap-2">
               <Button 
                 variant="outline-secondary" 
                 onClick={() => navigate('/locations/tdl')}
               >
-                ← Back to List
+                ← Retour à la Liste
               </Button>
               <Button 
                 variant="primary" 
                 onClick={() => navigate('/tdl')}
               >
-                Manage TDL
+                Gérer TDL
               </Button>
             </div>
           </div>
@@ -114,7 +133,7 @@ const TDLDetail = () => {
         <Col lg={8} className="mb-4">
           <Card className="h-100">
             <Card.Header className="bg-primary text-white">
-              <h5 className="mb-0">📊 Site Overview</h5>
+              <h5 className="mb-0">📊 Aperçu du Site</h5>
             </Card.Header>
             <Card.Body>
               <Row>
@@ -122,30 +141,28 @@ const TDLDetail = () => {
                   <Table borderless className="mb-0">
                     <tbody>
                       <tr>
-                        <td className="fw-bold">Site ID:</td>
+                        <td className="fw-bold">ID Site :</td>
                         <td>{tdl.id}</td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">Region:</td>
-                        <td>
-                          <Badge bg="primary">{tdl.region}</Badge>
-                        </td>
+                        <td className="fw-bold">Région :</td>
+                        <td>{tdl.region}</td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">SDS Status:</td>
+                        <td className="fw-bold">SDS :</td>
                         <td>
-                          <Badge bg={tdl.SDS ? 'success' : 'warning'}>
-                            {tdl.SDS ? 'Active' : 'Inactive'}
+                          <Badge bg={tdl.SDS ? 'success' : 'secondary'}>
+                            {tdl.SDS ? 'Oui' : 'Non'}
                           </Badge>
                         </td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">Floor Space:</td>
+                        <td className="fw-bold">Surface au Sol :</td>
                         <td>{tdl.esp_plan} m²</td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">Cabinets:</td>
-                        <td>{tdl.nb_cab} units</td>
+                        <td className="fw-bold">Armoires :</td>
+                        <td>{tdl.nb_cab}</td>
                       </tr>
                     </tbody>
                   </Table>
@@ -154,19 +171,19 @@ const TDLDetail = () => {
                   <Table borderless className="mb-0">
                     <tbody>
                       <tr>
-                        <td className="fw-bold">Address:</td>
+                        <td className="fw-bold">Adresse :</td>
                         <td>{tdl.adresse}</td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">City:</td>
+                        <td className="fw-bold">Ville :</td>
                         <td>{tdl.ville}</td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">Postal Code:</td>
+                        <td className="fw-bold">Code Postal :</td>
                         <td>{tdl.code_postal}</td>
                       </tr>
                       <tr>
-                        <td className="fw-bold">Total Load:</td>
+                        <td className="fw-bold">Charge Totale :</td>
                         <td className="fw-bold text-primary">
                           {totalLoad().toLocaleString()} W
                         </td>
@@ -183,12 +200,12 @@ const TDLDetail = () => {
         <Col lg={4} className="mb-4">
           <Card className="h-100">
             <Card.Header className="bg-success text-white">
-              <h5 className="mb-0">⚡ Load Distribution</h5>
+              <h5 className="mb-0">⚡ Répartition des Charges</h5>
             </Card.Header>
             <Card.Body>
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <small>AC Load</small>
+                  <small>Charge AC</small>
                   <small>{percentages.ac}%</small>
                 </div>
                 <ProgressBar 
@@ -203,7 +220,7 @@ const TDLDetail = () => {
 
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <small>DC Load</small>
+                  <small>Charge DC</small>
                   <small>{percentages.dc}%</small>
                 </div>
                 <ProgressBar 
@@ -218,7 +235,7 @@ const TDLDetail = () => {
 
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <small>Generator Load</small>
+                  <small>Charge Générateur</small>
                   <small>{percentages.gen}%</small>
                 </div>
                 <ProgressBar 
@@ -233,7 +250,7 @@ const TDLDetail = () => {
 
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-1">
-                  <small>Climate Load</small>
+                  <small>Charge Climatisation</small>
                   <small>{percentages.clim}%</small>
                 </div>
                 <ProgressBar 
@@ -251,8 +268,129 @@ const TDLDetail = () => {
                 <h4 className="text-primary mb-0">
                   {totalLoad().toLocaleString()} W
                 </h4>
-                <small className="text-muted">Total Load</small>
+                <small className="text-muted">Charge Totale</small>
               </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* AC Needs Section */}
+      <Row className="mb-4">
+        <Col>
+          <Card>
+            <Card.Header className="bg-warning text-dark">
+              <h5 className="mb-0">⚡ Besoins AC</h5>
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                {/* AC Equipment for this TDL */}
+                <Col lg={6} className="mb-4">
+                  <h6 className="mb-3">💻 Équipement AC pour ce TDL</h6>
+                  {acEquipment.length > 0 ? (
+                    <Row>
+                      {acEquipment.map((ac) => (
+                        <Col md={6} key={ac.id} className="mb-3">
+                          <Card className="h-100 border-primary">
+                            <Card.Body className="p-3">
+                              <div className="d-flex justify-content-between align-items-start mb-2">
+                                <h6 className="mb-0 text-primary">{ac.nom}</h6>
+                                <Badge bg={ac.type === 'UPS' ? 'success' : 'info'}>
+                                  {ac.type}
+                                </Badge>
+                              </div>
+                              <div className="small text-muted mb-2">
+                                <div><strong>Sortie AC :</strong> {ac.output_ac?.toLocaleString()} W</div>
+                                <div><strong>Tension :</strong> {ac.voltage} V</div>
+                                <div><strong>Phase :</strong> {ac.phase}</div>
+                              </div>
+                              <div className="small">
+                                <Badge bg="outline-secondary" className="me-1">SLA: {ac.SLA}%</Badge>
+                                {ac.fabricant_nom && (
+                                  <Badge bg="outline-info">{ac.fabricant_nom}</Badge>
+                                )}
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
+                  ) : (
+                    <div className="text-center py-4 text-muted">
+                      <p>Aucun équipement AC trouvé pour ce TDL</p>
+                    </div>
+                  )}
+                </Col>
+
+                {/* AC Load and Supply Analysis */}
+                <Col lg={6}>
+                  <Row>
+                    {/* AC Load from TDL table */}
+                    <Col md={12} className="mb-3">
+                      <Card className="bg-light">
+                        <Card.Body className="text-center">
+                          <h6 className="text-muted mb-1">Charge AC (depuis la table TDL)</h6>
+                          <h3 className="text-primary mb-0">
+                            {tdl.charge_ac?.toLocaleString()} W
+                          </h3>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* AC Supply vs Load */}
+                    <Col md={12} className="mb-3">
+                      <h6 className="mb-2">Barre de pourcentage (Charge AC / Alimentation AC)</h6>
+                      <div className="mb-2">
+                        <div className="d-flex justify-content-between mb-1">
+                          <small>Utilisation AC</small>
+                          <small>{acUtilization()}%</small>
+                        </div>
+                        <ProgressBar 
+                          variant={acUtilization() > 80 ? 'danger' : acUtilization() > 60 ? 'warning' : 'success'}
+                          now={Math.min(acUtilization(), 100)}
+                          className="mb-2"
+                        />
+                        <div className="d-flex justify-content-between small text-muted">
+                          <span>Charge: {tdl.charge_ac?.toLocaleString()} W</span>
+                          <span>Alimentation: {totalAcSupply().toLocaleString()} W</span>
+                        </div>
+                      </div>
+                    </Col>
+
+                    {/* Graph placeholder */}
+                    <Col md={12} className="mb-3">
+                      <Card className="border-dashed" style={{ minHeight: '200px' }}>
+                        <Card.Body className="d-flex align-items-center justify-content-center">
+                          <div className="text-center text-muted">
+                            <div className="mb-2">
+                              <i className="fas fa-chart-line fa-3x"></i>
+                            </div>
+                            <h6>Graphique avec besoins AC et</h6>
+                            <h6>alimentation AC sur les</h6>
+                            <h6>5 prochaines années</h6>
+                            <small className="text-muted">(À implémenter)</small>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+
+              {/* Future section placeholder */}
+              <Row className="mt-4">
+                <Col lg={6}>
+                  <Card className="border-dashed" style={{ minHeight: '150px' }}>
+                    <Card.Body className="d-flex align-items-center justify-content-center">
+                      <div className="text-center text-muted">
+                        <h6>Créer une section,</h6>
+                        <h6>mais laisser vide</h6>
+                        <h6>pour l'instant</h6>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
             </Card.Body>
           </Card>
         </Col>
