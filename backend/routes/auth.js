@@ -118,17 +118,28 @@ router.post('/login', loginValidation, async (req, res) => {
       );
       users = usersWithHash;
       passwordField = 'password_hash';
+      console.log('Successfully queried users with password_hash column');
     } catch (error) {
+      console.log('password_hash column failed, trying password column:', error.message);
       // If password_hash column doesn't exist, try password column (old schema)
-      try {
-        const [usersWithPassword] = await db.execute(
-          'SELECT id, email, password, first_name, last_name, department, position, is_active, last_login FROM users WHERE email = ?',
-          [email]
-        );
-        users = usersWithPassword;
-        passwordField = 'password';
-      } catch (secondError) {
-        console.error('Login error - unable to query users table:', secondError);
+      if (error.code === 'ER_BAD_FIELD_ERROR' && error.message.includes('password_hash')) {
+        try {
+          const [usersWithPassword] = await db.execute(
+            'SELECT id, email, password, first_name, last_name, department, position, is_active, last_login FROM users WHERE email = ?',
+            [email]
+          );
+          users = usersWithPassword;
+          passwordField = 'password';
+          console.log('Successfully queried users with password column');
+        } catch (secondError) {
+          console.error('Login error - unable to query users table with either column:', secondError);
+          return res.status(500).json({
+            error: 'Database error',
+            code: 'DATABASE_ERROR'
+          });
+        }
+      } else {
+        console.error('Login error - unexpected database error:', error);
         return res.status(500).json({
           error: 'Database error',
           code: 'DATABASE_ERROR'
