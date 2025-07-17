@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Button, Alert, Spinner, Badge } from 'react-bootstrap';
 import apiService from '../services/api';
+import SearchBar from './SearchBar';
 
 const TDLList = () => {
   const [tdlSites, setTdlSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   // Performance: Memoized fetch function
@@ -32,6 +34,24 @@ const TDLList = () => {
   const handleTDLClick = useCallback((tdlId) => {
     navigate(`/tdl/${tdlId}`);
   }, [navigate]);
+
+  // Performance: Memoized search handler
+  const handleSearch = useCallback((term) => {
+    setSearchTerm(term);
+  }, []);
+
+  // Performance: Memoized filtered results
+  const filteredTDLSites = useMemo(() => {
+    if (!searchTerm.trim()) return tdlSites;
+    
+    const lowercaseSearch = searchTerm.toLowerCase();
+    return tdlSites.filter(tdl => 
+      tdl.id.toLowerCase().includes(lowercaseSearch) ||
+      tdl.region.toLowerCase().includes(lowercaseSearch) ||
+      tdl.adresse?.toString().toLowerCase().includes(lowercaseSearch) ||
+      tdl.ville?.toString().toLowerCase().includes(lowercaseSearch)
+    );
+  }, [tdlSites, searchTerm]);
 
   if (loading) {
     return (
@@ -62,8 +82,23 @@ const TDLList = () => {
           <p className="text-muted">Total Distribution Locations</p>
         </div>
         <Badge bg="primary" className="fs-6">
-          {tdlSites.length} Sites
+          {filteredTDLSites.length} of {tdlSites.length} Sites
         </Badge>
+      </div>
+
+      {/* Performance: Search Bar */}
+      <div className="mb-4">
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search TDL sites by ID, region, address, or city..."
+          className="mb-3"
+          size="lg"
+        />
+        {searchTerm && (
+          <div className="text-muted small">
+            <strong>{filteredTDLSites.length}</strong> site{filteredTDLSites.length !== 1 ? 's' : ''} found for "{searchTerm}"
+          </div>
+        )}
       </div>
 
       {tdlSites.length === 0 ? (
@@ -71,9 +106,14 @@ const TDLList = () => {
           <Alert.Heading>No TDL Sites Found</Alert.Heading>
           <p>There are currently no TDL sites in the system.</p>
         </Alert>
+      ) : filteredTDLSites.length === 0 ? (
+        <Alert variant="warning">
+          <Alert.Heading>No Results Found</Alert.Heading>
+          <p>No TDL sites match your search criteria for "{searchTerm}". Try adjusting your search terms.</p>
+        </Alert>
       ) : (
         <Row>
-          {tdlSites.map((tdl) => (
+          {filteredTDLSites.map((tdl) => (
             <Col key={tdl.id} xs={12} sm={6} lg={4} xl={3} className="mb-4">
               <Card 
                 className="h-100 shadow-sm hover-shadow transition-all"

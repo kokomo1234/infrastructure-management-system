@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Button, Alert, Spinner, Badge } from 'react-bootstrap';
 import apiService from '../services/api';
+import SearchBar from './SearchBar';
 
 const TSFList = () => {
   const [tsfFacilities, setTsfFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   // Performance: Memoized fetch function
@@ -32,6 +34,26 @@ const TSFList = () => {
   const handleTSFClick = useCallback((tsfId) => {
     navigate(`/tsf/${tsfId}`);
   }, [navigate]);
+
+  // Performance: Memoized search handler
+  const handleSearch = useCallback((term) => {
+    setSearchTerm(term);
+  }, []);
+
+  // Performance: Memoized filtered results
+  const filteredTSFFacilities = useMemo(() => {
+    if (!searchTerm.trim()) return tsfFacilities;
+    
+    const lowercaseSearch = searchTerm.toLowerCase();
+    return tsfFacilities.filter(tsf => 
+      tsf.id.toLowerCase().includes(lowercaseSearch) ||
+      tsf.region.toLowerCase().includes(lowercaseSearch) ||
+      tsf.type_service?.toLowerCase().includes(lowercaseSearch) ||
+      tsf.capacite?.toLowerCase().includes(lowercaseSearch) ||
+      tsf.adresse?.toString().toLowerCase().includes(lowercaseSearch) ||
+      tsf.ville?.toString().toLowerCase().includes(lowercaseSearch)
+    );
+  }, [tsfFacilities, searchTerm]);
 
   if (loading) {
     return (
@@ -62,8 +84,23 @@ const TSFList = () => {
           <p className="text-muted">Technical Service Facilities</p>
         </div>
         <Badge bg="info" className="fs-6">
-          {tsfFacilities.length} Facilities
+          {filteredTSFFacilities.length} of {tsfFacilities.length} Facilities
         </Badge>
+      </div>
+
+      {/* Performance: Search Bar */}
+      <div className="mb-4">
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search TSF facilities by ID, region, service type, capacity..."
+          className="mb-3"
+          size="lg"
+        />
+        {searchTerm && (
+          <div className="text-muted small">
+            <strong>{filteredTSFFacilities.length}</strong> facilit{filteredTSFFacilities.length !== 1 ? 'ies' : 'y'} found for "{searchTerm}"
+          </div>
+        )}
       </div>
 
       {tsfFacilities.length === 0 ? (
@@ -71,9 +108,14 @@ const TSFList = () => {
           <Alert.Heading>No TSF Facilities Found</Alert.Heading>
           <p>There are currently no TSF facilities in the system.</p>
         </Alert>
+      ) : filteredTSFFacilities.length === 0 ? (
+        <Alert variant="warning">
+          <Alert.Heading>No Results Found</Alert.Heading>
+          <p>No TSF facilities match your search criteria for "{searchTerm}". Try adjusting your search terms.</p>
+        </Alert>
       ) : (
         <Row>
-          {tsfFacilities.map((tsf) => (
+          {filteredTSFFacilities.map((tsf) => (
             <Col key={tsf.id} xs={12} sm={6} lg={4} xl={3} className="mb-4">
               <Card 
                 className="h-100 shadow-sm hover-shadow transition-all"
