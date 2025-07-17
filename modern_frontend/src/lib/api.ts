@@ -1,5 +1,7 @@
 // API Configuration
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://infrastructure-management-system-production.up.railway.app/api'
+  : '/api';
 
 // Token management
 class TokenManager {
