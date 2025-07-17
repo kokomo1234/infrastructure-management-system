@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm run build"
+  command = "node generate-build-info.js && npm run build"
   publish = "frontend/build"
 
 [build.environment]

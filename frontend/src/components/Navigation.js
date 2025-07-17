@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+import BuildInfo from './BuildInfo';
 
 const Navigation = () => {
   return (
@@ -62,6 +63,13 @@ const Navigation = () => {
                 <NavDropdown.Item>🏭 Manufacturers</NavDropdown.Item>
               </LinkContainer>
             </NavDropdown>
+          </Nav>
+          
+          {/* Performance: Build Info in top right */}
+          <Nav className="ms-auto">
+            <Nav.Item className="d-flex align-items-center">
+              <BuildInfo />
+            </Nav.Item>
           </Nav>
         </Navbar.Collapse>
       </Container>
