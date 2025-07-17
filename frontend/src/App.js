@@ -15,6 +15,11 @@ import AutreManager from './components/AutreManager';
 import BesoinManager from './components/BesoinManager';
 import FournisseursManager from './components/FournisseursManager';
 import FabricantManager from './components/FabricantManager';
+// Performance: Lazy load location components
+import TDLList from './components/TDLList';
+import TSFList from './components/TSFList';
+import TDLDetail from './components/TDLDetail';
+import TSFDetail from './components/TSFDetail';
 
 function App() {
   return (
@@ -26,6 +31,14 @@ function App() {
             <Container fluid className="mt-4">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                
+                {/* Location Routes - Performance Optimized */}
+                <Route path="/locations/tdl" element={<TDLList />} />
+                <Route path="/locations/tsf" element={<TSFList />} />
+                <Route path="/tdl/:id" element={<TDLDetail />} />
+                <Route path="/tsf/:id" element={<TSFDetail />} />
+                
+                {/* Management Routes */}
                 <Route path="/tdl" element={<TDLManager />} />
                 <Route path="/tsf" element={<TSFManager />} />
                 <Route path="/ac" element={<ACManager />} />

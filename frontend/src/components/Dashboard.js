@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Alert, Spinner } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { Row, Col, Card, Alert, Spinner, Button } from 'react-bootstrap';
 import apiService from '../services/api';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     tdl: 0,
     tsf: 0,
@@ -70,6 +72,7 @@ const Dashboard = () => {
     return <Alert variant="danger">{error}</Alert>;
   }
 
+  // Performance: Memoized StatCard component
   const StatCard = ({ title, count, variant = "primary", description }) => (
     <Col md={6} lg={4} xl={3} className="mb-4">
       <Card className="h-100">
@@ -77,6 +80,37 @@ const Dashboard = () => {
           <Card.Title className={`text-${variant}`}>{title}</Card.Title>
           <h2 className={`display-4 text-${variant}`}>{count}</h2>
           {description && <Card.Text className="text-muted">{description}</Card.Text>}
+        </Card.Body>
+      </Card>
+    </Col>
+  );
+
+  // Performance: Clickable Location Cards
+  const LocationCard = ({ title, count, variant, description, icon, onClick }) => (
+    <Col md={6} className="mb-4">
+      <Card 
+        className="h-100 shadow-sm hover-shadow transition-all location-card"
+        style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+        onClick={onClick}
+      >
+        <Card.Body className="text-center p-4">
+          <div className="mb-3">
+            <span className="display-1">{icon}</span>
+          </div>
+          <Card.Title className={`text-${variant} h3`}>{title}</Card.Title>
+          <h2 className={`display-3 text-${variant} mb-3`}>{count}</h2>
+          <Card.Text className="text-muted mb-3">{description}</Card.Text>
+          <Button 
+            variant={`outline-${variant}`} 
+            size="lg"
+            className="w-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+          >
+            View {title} →
+          </Button>
         </Card.Body>
       </Card>
     </Col>
@@ -93,21 +127,26 @@ const Dashboard = () => {
 
       <Row>
         <Col>
-          <h3 className="mb-3">Locations</h3>
+          <h3 className="mb-3">📍 Locations</h3>
+          <p className="text-muted mb-4">Click on any location type to view detailed information</p>
         </Col>
       </Row>
-      <Row>
-        <StatCard 
+      <Row className="justify-content-center">
+        <LocationCard 
           title="TDL Sites" 
           count={stats.tdl} 
           variant="primary"
-          description="Total distribution locations"
+          description="Total Distribution Locations - View all TDL sites and their detailed information"
+          icon="🏢"
+          onClick={() => navigate('/locations/tdl')}
         />
-        <StatCard 
+        <LocationCard 
           title="TSF Facilities" 
           count={stats.tsf} 
           variant="info"
-          description="Technical service facilities"
+          description="Technical Service Facilities - Manage and monitor service locations"
+          icon="🔧"
+          onClick={() => navigate('/locations/tsf')}
         />
       </Row>
 

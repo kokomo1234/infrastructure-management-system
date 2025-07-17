@@ -18,6 +18,49 @@ code {
   font-size: 1.5rem;
 }
 
+/* Performance-optimized hover effects */
+.hover-shadow {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.location-card:hover {
+  border-color: var(--bs-primary) !important;
+}
+
+.transition-all {
+  transition: all 0.2s ease;
+}
+
+/* Loading spinner optimization */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Performance: GPU acceleration for animations */
+.hover-shadow,
+.location-card {
+  will-change: transform, box-shadow;
+}
+
+/* Responsive optimizations */
+@media (max-width: 768px) {
+  .display-1 {
+    font-size: 3rem;
+  }
+  
+  .display-3 {
+    font-size: 2rem;
+  }
+}
+
 .card {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   border: 1px solid rgba(0, 0, 0, 0.125);
