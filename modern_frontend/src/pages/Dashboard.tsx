@@ -17,19 +17,36 @@ const Dashboard = () => {
     queryFn: () => apiService.getACEquipment().then(res => res.data),
   });
 
-  const { data: workOrders, isLoading: workOrdersLoading } = useQuery({
-    queryKey: ['work-orders'],
-    queryFn: () => apiService.getWorkOrders().then(res => res.data),
-    retry: false, // Work orders might not exist yet
-  });
+  // Work orders query removed - not currently used in dashboard display
+  // Can be re-added when work orders section is implemented
 
-  // Calculate metrics
+  // Calculate metrics with error handling
   const totalSites = tdlSites?.length || 0;
   const totalEquipment = acEquipment?.length || 0;
   const activeSites = tdlSites?.filter(site => site.status === 'Actif').length || 0;
-  const totalCapacity = tdlSites?.reduce((sum, site) => sum + (site.total_capacity_kw || 0), 0) || 0;
-  const usedCapacity = tdlSites?.reduce((sum, site) => sum + (site.used_capacity_kw || 0), 0) || 0;
-  const utilizationPercentage = calculateUtilization(usedCapacity, totalCapacity);
+  
+  let totalCapacity = 0;
+  let usedCapacity = 0;
+  let utilizationPercentage = 0;
+  
+  try {
+    totalCapacity = tdlSites?.reduce((sum, site) => {
+      const capacity = site.total_capacity_kw || 0;
+      return sum + (typeof capacity === 'number' ? capacity : 0);
+    }, 0) || 0;
+    
+    usedCapacity = tdlSites?.reduce((sum, site) => {
+      const used = site.used_capacity_kw || 0;
+      return sum + (typeof used === 'number' ? used : 0);
+    }, 0) || 0;
+    
+    utilizationPercentage = calculateUtilization(usedCapacity, totalCapacity);
+  } catch (error) {
+    console.error('Error calculating metrics:', error);
+    totalCapacity = 0;
+    usedCapacity = 0;
+    utilizationPercentage = 0;
+  }
 
   // Recent alerts (mock data for now)
   const recentAlerts = [
