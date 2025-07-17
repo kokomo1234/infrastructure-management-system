@@ -8,12 +8,22 @@ export function cn(...inputs: ClassValue[]) {
 // Utility functions for the infrastructure management system
 export const formatCapacity = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return 'N/A';
-  return `${value.toFixed(1)} kW`;
+  
+  // Convert to number and validate
+  const numValue = Number(value);
+  if (isNaN(numValue)) return 'N/A';
+  
+  return `${numValue.toFixed(1)} kW`;
 };
 
 export const formatPercentage = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return 'N/A';
-  return `${value}%`;
+  
+  // Convert to number and validate
+  const numValue = Number(value);
+  if (isNaN(numValue)) return 'N/A';
+  
+  return `${numValue}%`;
 };
 
 export const getStatusColor = (status: string): string => {
