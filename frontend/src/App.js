@@ -20,6 +20,7 @@ import TDLList from './components/TDLList';
 import TSFList from './components/TSFList';
 import TDLDetail from './components/TDLDetail';
 import TSFDetail from './components/TSFDetail';
+import ACDetail from './components/ACDetail';
 
 function App() {
   return (
@@ -37,6 +38,9 @@ function App() {
                 <Route path="/locations/tsf" element={<TSFList />} />
                 <Route path="/tdl/:id" element={<TDLDetail />} />
                 <Route path="/tsf/:id" element={<TSFDetail />} />
+                
+                {/* Equipment Detail Routes */}
+                <Route path="/equipment/ac/:id" element={<ACDetail />} />
                 
                 {/* Management Routes */}
                 <Route path="/tdl" element={<TDLManager />} />

@@ -309,33 +309,32 @@ const TDLDetail = () => {
                     {acEquipment.length > 0 ? (
                       <div className="bg-light p-3 rounded">
                         {acEquipment.map((ac) => (
-                          <Card key={ac.id} className="mb-3 shadow-sm border-0">
-                            <Card.Body className="p-3">
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                  <h6 className="mb-1 text-dark">{ac.nom}</h6>
-                                  <small className="text-muted">ID: {ac.id} | TDL_id: {ac.TDL_id}</small>
-                                </div>
-                                <Badge bg={ac.type === 'UPS' ? 'success' : 'info'} className="ms-2">
-                                  {ac.type}
-                                </Badge>
-                              </div>
-                              <div className="small mb-2">
-                                <div className="mb-1">
-                                  <strong>Capacité AC:</strong> 
-                                  <span className="text-primary fw-bold ms-1">
-                                    {ac.output_ac?.toLocaleString()} W
-                                  </span>
-                                </div>
-                                <div className="mb-1"><strong>Tension:</strong> {ac.voltage} V</div>
-                                <div className="mb-1"><strong>Phase:</strong> {ac.phase}</div>
-                                <div className="mb-1"><strong>Puissance Totale:</strong> {ac.puissance_tot?.toLocaleString()} W</div>
-                              </div>
+                          <Card 
+                            key={ac.id} 
+                            className="mb-2 border-start border-primary border-3 equipment-card" 
+                            style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+                            onClick={() => window.open(`/equipment/ac/${ac.id}`, '_blank')}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateX(4px)';
+                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateX(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <Card.Body className="py-2 px-3">
                               <div className="d-flex justify-content-between align-items-center">
-                                <Badge bg="outline-secondary" text="dark">SLA: {ac.SLA}%</Badge>
-                                <small className="text-muted">
-                                  {ac.date_inst && `Installé: ${ac.date_inst}`}
-                                </small>
+                                <div className="flex-grow-1">
+                                  <div className="d-flex align-items-center">
+                                    <h6 className="mb-0 text-primary me-2">{ac.nom}</h6>
+                                    <Badge bg={ac.type === 'UPS' ? 'success' : 'info'} className="me-2">
+                                      {ac.type}
+                                    </Badge>
+                                    <span className="text-primary fw-bold">{ac.output_ac?.toLocaleString()} W</span>
+                                  </div>
+                                </div>
+                                <i className="fas fa-external-link-alt text-muted small"></i>
                               </div>
                             </Card.Body>
                           </Card>
