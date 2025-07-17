@@ -23,7 +23,7 @@ const TDLDetail = () => {
       
       // Fetch AC equipment for this TDL
       const acResponse = await apiService.getAll('ac');
-      const tdlAcEquipment = acResponse.data.filter(ac => ac.TDL_id == id);
+      const tdlAcEquipment = acResponse.data.filter(ac => ac.TDL_id === parseInt(id));
       setAcEquipment(tdlAcEquipment);
       
       setError(null);
