@@ -16,11 +16,17 @@ export const AuthProvider = ({ children }) => {
 
   // Performance: Use useCallback to prevent unnecessary re-renders
   const login = useCallback((credentials) => {
-    // Simple credential check (replace with your actual auth logic)
+    // Secure credential check using environment variables only
     const validCredentials = {
-      username: 'admin',
-      password: 'infra2024!'
+      username: process.env.REACT_APP_ADMIN_USERNAME,
+      password: process.env.REACT_APP_ADMIN_PASSWORD
     };
+
+    // Ensure environment variables are set
+    if (!validCredentials.username || !validCredentials.password) {
+      console.error('❌ Admin credentials not configured. Please set REACT_APP_ADMIN_USERNAME and REACT_APP_ADMIN_PASSWORD in .env file.');
+      return { success: false, error: 'Configuration d\'authentification manquante' };
+    }
 
     if (credentials.username === validCredentials.username && 
         credentials.password === validCredentials.password) {

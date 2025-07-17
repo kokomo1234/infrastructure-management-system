@@ -9,6 +9,8 @@ A full-stack web application for managing telecommunications infrastructure, bui
 - **Equipment Management**: AC/DC equipment, HVAC systems, generators
 - **Supplier & Manufacturer Management**: Contact and vendor information
 - **Requirements Management**: Track infrastructure needs and requests
+- **Secure Authentication**: Protected database modifications with admin credentials
+- **French Localization**: Complete French interface for all user-facing content
 
 ## Technology Stack
 
@@ -116,6 +118,37 @@ Each endpoint supports full CRUD operations:
 - `POST /{endpoint}` - Create new record
 - `PUT /{endpoint}/:id` - Update record
 - `DELETE /{endpoint}/:id` - Delete record
+
+## Security & Authentication
+
+### Frontend Authentication
+The application includes secure authentication for database modifications:
+
+1. **Environment Variables**: Admin credentials are stored in environment variables
+2. **Session Management**: 30-minute session timeout for security
+3. **Protected Operations**: Create, Update, Delete operations require authentication
+4. **Secure Storage**: Credentials stored in sessionStorage (not localStorage)
+
+### Setup Authentication
+
+1. Copy the environment template:
+   ```bash
+   cp frontend/.env.example frontend/.env
+   ```
+
+2. Set your admin credentials in `frontend/.env`:
+   ```env
+   REACT_APP_ADMIN_USERNAME=your_admin_username
+   REACT_APP_ADMIN_PASSWORD=your_secure_password
+   ```
+
+3. **Important**: Never commit the `.env` file to version control
+
+### Security Best Practices
+- Admin credentials are not displayed in the UI
+- Environment variables are used for sensitive configuration
+- Session tokens expire automatically
+- Authentication is required for all data modifications
 
 ## Usage
 

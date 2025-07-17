@@ -146,9 +146,8 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
 
         <div className="mt-3 text-center">
           <small className="text-muted">
-            💡 <strong>Identifiants de Démo :</strong><br/>
-            Nom d'utilisateur : <code>admin</code><br/>
-            Mot de passe : <code>infra2024!</code>
+            🔒 <strong>Accès Sécurisé :</strong><br/>
+            Contactez l'administrateur pour obtenir les identifiants d'accès.
           </small>
         </div>
       </Modal.Body>
