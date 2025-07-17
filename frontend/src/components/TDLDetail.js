@@ -282,115 +282,112 @@ const TDLDetail = () => {
             <Card.Header className="bg-warning text-dark">
               <h5 className="mb-0">⚡ Besoins AC</h5>
             </Card.Header>
-            <Card.Body>
-              <Row>
-                {/* AC Equipment for this TDL */}
-                <Col lg={6} className="mb-4">
-                  <h6 className="mb-3">💻 Équipement AC pour ce TDL</h6>
-                  {acEquipment.length > 0 ? (
-                    <Row>
-                      {acEquipment.map((ac) => (
-                        <Col md={6} key={ac.id} className="mb-3">
-                          <Card className="h-100 border-primary">
-                            <Card.Body className="p-3">
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <h6 className="mb-0 text-primary">{ac.nom}</h6>
-                                <Badge bg={ac.type === 'UPS' ? 'success' : 'info'}>
-                                  {ac.type}
-                                </Badge>
-                              </div>
-                              <div className="small text-muted mb-2">
-                                <div><strong>Sortie AC :</strong> {ac.output_ac?.toLocaleString()} W</div>
-                                <div><strong>Tension :</strong> {ac.voltage} V</div>
-                                <div><strong>Phase :</strong> {ac.phase}</div>
-                              </div>
-                              <div className="small">
-                                <Badge bg="outline-secondary" className="me-1">SLA: {ac.SLA}%</Badge>
-                                {ac.fabricant_nom && (
-                                  <Badge bg="outline-info">{ac.fabricant_nom}</Badge>
-                                )}
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  ) : (
-                    <div className="text-center py-4 text-muted">
-                      <p>Aucun équipement AC trouvé pour ce TDL</p>
+            <Card.Body className="p-0">
+              {/* Top Section - AC Equipment Cards */}
+              <div className="bg-light p-4 border-bottom">
+                <Row>
+                  <Col>
+                    <h6 className="mb-3 text-primary">📋 Équipement AC pour ce TDL</h6>
+                    {acEquipment.length > 0 ? (
+                      <Row>
+                        {acEquipment.map((ac) => (
+                          <Col lg={4} md={6} key={ac.id} className="mb-3">
+                            <Card className="h-100 shadow-sm border-0">
+                              <Card.Body className="p-3">
+                                <div className="d-flex justify-content-between align-items-start mb-2">
+                                  <div>
+                                    <h6 className="mb-1 text-dark">{ac.nom}</h6>
+                                    <small className="text-muted">ID: {ac.id}</small>
+                                  </div>
+                                  <Badge bg={ac.type === 'UPS' ? 'success' : 'info'} className="ms-2">
+                                    {ac.type}
+                                  </Badge>
+                                </div>
+                                <div className="small mb-2">
+                                  <div className="mb-1"><strong>Sortie AC:</strong> {ac.output_ac?.toLocaleString()} W</div>
+                                  <div className="mb-1"><strong>Tension:</strong> {ac.voltage} V</div>
+                                  <div className="mb-1"><strong>Phase:</strong> {ac.phase}</div>
+                                </div>
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <Badge bg="outline-secondary" text="dark">SLA: {ac.SLA}%</Badge>
+                                  {ac.fabricant_nom && (
+                                    <small className="text-muted">{ac.fabricant_nom}</small>
+                                  )}
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-muted">
+                          <i className="fas fa-exclamation-circle fa-2x mb-2"></i>
+                          <p className="mb-0">Aucun équipement AC trouvé pour ce TDL</p>
+                        </div>
+                      </div>
+                    )}
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Bottom Section - Analysis and Charts */}
+              <div className="p-4">
+                <Row>
+                  {/* Left Column - AC Load Analysis */}
+                  <Col lg={4} className="mb-4">
+                    <div className="bg-success bg-opacity-10 p-3 rounded mb-3">
+                      <h6 className="text-success mb-2">Charge AC (depuis la table TDL)</h6>
+                      <h2 className="text-success mb-0">{tdl.charge_ac?.toLocaleString()} W</h2>
                     </div>
-                  )}
-                </Col>
-
-                {/* AC Load and Supply Analysis */}
-                <Col lg={6}>
-                  <Row>
-                    {/* AC Load from TDL table */}
-                    <Col md={12} className="mb-3">
-                      <Card className="bg-light">
-                        <Card.Body className="text-center">
-                          <h6 className="text-muted mb-1">Charge AC (depuis la table TDL)</h6>
-                          <h3 className="text-primary mb-0">
-                            {tdl.charge_ac?.toLocaleString()} W
-                          </h3>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-
-                    {/* AC Supply vs Load */}
-                    <Col md={12} className="mb-3">
+                    
+                    <div className="mb-3">
                       <h6 className="mb-2">Barre de pourcentage (Charge AC / Alimentation AC)</h6>
                       <div className="mb-2">
                         <div className="d-flex justify-content-between mb-1">
                           <small>Utilisation AC</small>
-                          <small>{acUtilization()}%</small>
+                          <small><strong>{acUtilization()}%</strong></small>
                         </div>
                         <ProgressBar 
                           variant={acUtilization() > 80 ? 'danger' : acUtilization() > 60 ? 'warning' : 'success'}
                           now={Math.min(acUtilization(), 100)}
                           className="mb-2"
+                          style={{ height: '8px' }}
                         />
                         <div className="d-flex justify-content-between small text-muted">
                           <span>Charge: {tdl.charge_ac?.toLocaleString()} W</span>
                           <span>Alimentation: {totalAcSupply().toLocaleString()} W</span>
                         </div>
                       </div>
-                    </Col>
+                    </div>
+                  </Col>
 
-                    {/* Graph placeholder */}
-                    <Col md={12} className="mb-3">
-                      <Card className="border-dashed" style={{ minHeight: '200px' }}>
-                        <Card.Body className="d-flex align-items-center justify-content-center">
-                          <div className="text-center text-muted">
-                            <div className="mb-2">
-                              <i className="fas fa-chart-line fa-3x"></i>
-                            </div>
-                            <h6>Graphique avec besoins AC et</h6>
-                            <h6>alimentation AC sur les</h6>
-                            <h6>5 prochaines années</h6>
-                            <small className="text-muted">(À implémenter)</small>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-
-              {/* Future section placeholder */}
-              <Row className="mt-4">
-                <Col lg={6}>
-                  <Card className="border-dashed" style={{ minHeight: '150px' }}>
-                    <Card.Body className="d-flex align-items-center justify-content-center">
-                      <div className="text-center text-muted">
-                        <h6>Créer une section,</h6>
-                        <h6>mais laisser vide</h6>
-                        <h6>pour l'instant</h6>
+                  {/* Middle Column - Graph */}
+                  <Col lg={4} className="mb-4">
+                    <div className="bg-primary bg-opacity-10 p-3 rounded h-100 d-flex align-items-center justify-content-center" style={{ minHeight: '250px' }}>
+                      <div className="text-center text-primary">
+                        <i className="fas fa-chart-line fa-3x mb-3"></i>
+                        <h6 className="mb-1">Graphique avec besoins AC et</h6>
+                        <h6 className="mb-1">alimentation AC sur les</h6>
+                        <h6 className="mb-2">5 prochaines années</h6>
+                        <small className="text-muted">(À implémenter)</small>
                       </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
+                    </div>
+                  </Col>
+
+                  {/* Right Column - Future Section */}
+                  <Col lg={4} className="mb-4">
+                    <div className="border border-2 border-dashed p-3 rounded h-100 d-flex align-items-center justify-content-center" style={{ minHeight: '250px' }}>
+                      <div className="text-center text-muted">
+                        <i className="fas fa-plus-circle fa-2x mb-3"></i>
+                        <h6 className="mb-1">Créer une section,</h6>
+                        <h6 className="mb-1">mais laisser vide</h6>
+                        <h6 className="mb-0">pour l'instant</h6>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
             </Card.Body>
           </Card>
         </Col>
