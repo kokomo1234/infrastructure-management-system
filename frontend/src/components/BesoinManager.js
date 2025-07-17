@@ -14,36 +14,36 @@ const BesoinManager = () => {
         { value: 'UPS', label: 'UPS' }
       ]
     },
-    { name: 'TDL_id', label: 'TDL ID', type: 'text', required: true, colSize: 6 },
-    { name: 'TSF_id', label: 'TSF ID', type: 'text', required: true, colSize: 6 },
-    { name: 'besoin_ac', label: 'AC Requirement (W)', type: 'number', required: true, colSize: 6 },
-    { name: 'besoin_dc', label: 'DC Requirement (W)', type: 'number', required: true, colSize: 6 },
-    { name: 'besoin_gen', label: 'Generator Requirement (W)', type: 'number', required: true, colSize: 6 },
-    { name: 'besoin_clim', label: 'HVAC Requirement (W)', type: 'number', required: true, colSize: 6 },
-    { name: 'année_req', label: 'Required Year', type: 'number', required: true, colSize: 6 },
-    { name: 'date_demande', label: 'Request Date', type: 'number', required: true, colSize: 6 },
-    { name: 'commentaire', label: 'Comments', type: 'number', colSize: 6 },
+    { name: 'TDL_id', label: 'ID TDL', type: 'text', required: true, colSize: 6 },
+    { name: 'TSF_id', label: 'ID TSF', type: 'text', required: true, colSize: 6 },
+    { name: 'besoin_ac', label: 'Besoin AC (W)', type: 'number', required: true, colSize: 6 },
+    { name: 'besoin_dc', label: 'Besoin DC (W)', type: 'number', required: true, colSize: 6 },
+    { name: 'besoin_gen', label: 'Besoin Générateur (W)', type: 'number', required: true, colSize: 6 },
+    { name: 'besoin_clim', label: 'Besoin Climatisation (W)', type: 'number', required: true, colSize: 6 },
+    { name: 'année_req', label: 'Année Requise', type: 'number', required: true, colSize: 6 },
+    { name: 'date_demande', label: 'Date de Demande', type: 'number', required: true, colSize: 6 },
+    { name: 'commentaire', label: 'Commentaires', type: 'number', colSize: 6 },
     { name: 'RU', label: 'RU', type: 'number', required: true, colSize: 6 }
   ];
 
   const displayFields = [
     { key: 'id', label: 'ID' },
     { key: 'type', label: 'Type' },
-    { key: 'TDL_id', label: 'TDL ID' },
-    { key: 'TSF_id', label: 'TSF ID' },
-    { key: 'besoin_ac', label: 'AC Req. (W)' },
-    { key: 'besoin_dc', label: 'DC Req. (W)' },
-    { key: 'année_req', label: 'Required Year' }
+    { key: 'TDL_id', label: 'ID TDL' },
+    { key: 'TSF_id', label: 'ID TSF' },
+    { key: 'besoin_ac', label: 'Besoin AC (W)' },
+    { key: 'besoin_dc', label: 'Besoin DC (W)' },
+    { key: 'année_req', label: 'Année Requise' }
   ];
 
   return (
     <DataManager
-      title="Requirements Management"
+      title="Gestion des Besoins"
       endpoint="besoin"
       fields={fields}
       displayFields={displayFields}
-      createTitle="Add New Requirement"
-      editTitle="Edit Requirement"
+      createTitle="Ajouter un Nouveau Besoin"
+      editTitle="Modifier le Besoin"
     />
   );
 };

@@ -13,8 +13,8 @@ const DataManager = ({
   fields, 
   displayFields,
   idField = 'id',
-  createTitle = 'Add New Record',
-  editTitle = 'Edit Record'
+  createTitle = 'Ajouter un Nouvel Enregistrement',
+  editTitle = 'Modifier l\'Enregistrement'
 }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ const DataManager = ({
       setData(response.data);
       setError(null);
     } catch (err) {
-      setError(`Failed to fetch ${title.toLowerCase()}`);
+      setError(`Échec du chargement de ${title.toLowerCase()}`);
       console.error(`Error fetching ${endpoint}:`, err);
     } finally {
       setLoading(false);
@@ -72,13 +72,13 @@ const DataManager = ({
   // Security: Protected delete action
   const handleDelete = (id) => {
     executeProtectedAction(async () => {
-      if (window.confirm('⚠️ Are you sure you want to delete this record? This action cannot be undone.')) {
+      if (window.confirm('⚠️ Êtes-vous sûr de vouloir supprimer cet enregistrement ? Cette action ne peut pas être annulée.')) {
         try {
           await apiService.delete(endpoint, id);
-          setSuccess('🗑️ Record deleted successfully');
+          setSuccess('🗑️ Enregistrement supprimé avec succès');
           fetchData();
         } catch (err) {
-          setError('❌ Failed to delete record');
+          setError('❌ Échec de la suppression de l\'enregistrement');
           console.error('Delete error:', err);
         }
       }
@@ -90,15 +90,15 @@ const DataManager = ({
     try {
       if (editingItem) {
         await apiService.update(endpoint, editingItem[idField], formData);
-        setSuccess('Record updated successfully');
+        setSuccess('Enregistrement mis à jour avec succès');
       } else {
         await apiService.create(endpoint, formData);
-        setSuccess('Record created successfully');
+        setSuccess('Enregistrement créé avec succès');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
-      setError(`Failed to ${editingItem ? 'update' : 'create'} record`);
+      setError(`Échec de ${editingItem ? 'la mise à jour' : 'la création'} de l'enregistrement`);
       console.error('Submit error:', err);
     }
   };
@@ -122,7 +122,7 @@ const DataManager = ({
             onChange={(e) => handleInputChange(name, e.target.value)}
             required={required}
           >
-            <option value="">Select {label}</option>
+            <option value="">Sélectionner {label}</option>
             {options.map(option => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -163,7 +163,7 @@ const DataManager = ({
     return (
       <div className="loading-spinner">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
+          <span className="visually-hidden">Chargement...</span>
         </Spinner>
       </div>
     );
@@ -189,7 +189,7 @@ const DataManager = ({
         <Card.Body>
           {data.length === 0 ? (
             <div className="text-center py-4">
-              <p className="text-muted">No records found</p>
+              <p className="text-muted">Aucun enregistrement trouvé</p>
             </div>
           ) : (
             <Table responsive striped hover>
@@ -212,10 +212,10 @@ const DataManager = ({
                     <td>
                       <ButtonGroup size="sm">
                         <Button variant="outline-primary" onClick={() => handleEdit(item)}>
-                          Edit
+                          Modifier
                         </Button>
                         <Button variant="outline-danger" onClick={() => handleDelete(item[idField])}>
-                          Delete
+                          Supprimer
                         </Button>
                       </ButtonGroup>
                     </td>
@@ -243,10 +243,10 @@ const DataManager = ({
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cancel
+              Annuler
             </Button>
             <Button variant="primary" type="submit">
-              {editingItem ? 'Update' : 'Create'}
+              {editingItem ? 'Mettre à jour' : 'Créer'}
             </Button>
           </Modal.Footer>
         </Form>

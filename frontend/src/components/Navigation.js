@@ -8,59 +8,59 @@ const Navigation = () => {
     <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
       <Container fluid>
         <LinkContainer to="/">
-          <Navbar.Brand>Infrastructure Management</Navbar.Brand>
+          <Navbar.Brand>Gestion d'Infrastructure</Navbar.Brand>
         </LinkContainer>
         
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <LinkContainer to="/">
-              <Nav.Link>Dashboard</Nav.Link>
+              <Nav.Link>Tableau de Bord</Nav.Link>
             </LinkContainer>
             
-            <NavDropdown title="Locations" id="locations-dropdown">
+            <NavDropdown title="Emplacements" id="locations-dropdown">
               <LinkContainer to="/locations/tdl">
-                <NavDropdown.Item>🏢 TDL Sites</NavDropdown.Item>
+                <NavDropdown.Item>🏢 Sites TDL</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/locations/tsf">
-                <NavDropdown.Item>🔧 TSF Facilities</NavDropdown.Item>
+                <NavDropdown.Item>🔧 Installations TSF</NavDropdown.Item>
               </LinkContainer>
               <NavDropdown.Divider />
               <LinkContainer to="/tdl">
-                <NavDropdown.Item>⚙️ Manage TDL</NavDropdown.Item>
+                <NavDropdown.Item>⚙️ Gérer TDL</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/tsf">
-                <NavDropdown.Item>⚙️ Manage TSF</NavDropdown.Item>
+                <NavDropdown.Item>⚙️ Gérer TSF</NavDropdown.Item>
               </LinkContainer>
             </NavDropdown>
             
-            <NavDropdown title="Equipment" id="equipment-dropdown">
+            <NavDropdown title="Équipement" id="equipment-dropdown">
               <LinkContainer to="/ac">
-                <NavDropdown.Item>⚡ AC Equipment</NavDropdown.Item>
+                <NavDropdown.Item>⚡ Équipement AC</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/dc">
-                <NavDropdown.Item>🔋 DC Equipment</NavDropdown.Item>
+                <NavDropdown.Item>🔋 Équipement DC</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/hvac">
-                <NavDropdown.Item>🌡️ HVAC Systems</NavDropdown.Item>
+                <NavDropdown.Item>🌡️ Systèmes HVAC</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/gen-tsw">
-                <NavDropdown.Item>⛽ Generators & TSW</NavDropdown.Item>
+                <NavDropdown.Item>⛽ Générateurs & TSW</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/autre">
-                <NavDropdown.Item>📦 Other Equipment</NavDropdown.Item>
+                <NavDropdown.Item>📦 Autres Équipements</NavDropdown.Item>
               </LinkContainer>
             </NavDropdown>
             
-            <NavDropdown title="Management" id="management-dropdown">
+            <NavDropdown title="Gestion" id="management-dropdown">
               <LinkContainer to="/besoin">
-                <NavDropdown.Item>📝 Requirements</NavDropdown.Item>
+                <NavDropdown.Item>📝 Besoins</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/fournisseurs">
-                <NavDropdown.Item>🚚 Suppliers</NavDropdown.Item>
+                <NavDropdown.Item>🚚 Fournisseurs</NavDropdown.Item>
               </LinkContainer>
               <LinkContainer to="/fabricant">
-                <NavDropdown.Item>🏭 Manufacturers</NavDropdown.Item>
+                <NavDropdown.Item>🏭 Fabricants</NavDropdown.Item>
               </LinkContainer>
             </NavDropdown>
           </Nav>

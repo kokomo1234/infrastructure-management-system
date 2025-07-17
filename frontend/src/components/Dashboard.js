@@ -51,7 +51,7 @@ const Dashboard = () => {
         fabricant: results[9].data.length
       });
     } catch (err) {
-      setError('Failed to fetch dashboard statistics');
+      setError('Échec du chargement des statistiques du tableau de bord');
       console.error('Dashboard error:', err);
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ const Dashboard = () => {
     return (
       <div className="loading-spinner">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
+          <span className="visually-hidden">Chargement...</span>
         </Spinner>
       </div>
     );
@@ -109,7 +109,7 @@ const Dashboard = () => {
               onClick();
             }}
           >
-            View {title} →
+            Voir {title} →
           </Button>
         </Card.Body>
       </Card>
@@ -120,31 +120,31 @@ const Dashboard = () => {
     <div>
       <Row className="mb-4">
         <Col>
-          <h1 className="display-4">Infrastructure Management Dashboard</h1>
-          <p className="lead">Overview of your telecommunications infrastructure</p>
+          <h1 className="display-4">Tableau de Bord de Gestion d'Infrastructure</h1>
+          <p className="lead">Aperçu de votre infrastructure de télécommunications</p>
         </Col>
       </Row>
 
       <Row>
         <Col>
-          <h3 className="mb-3">📍 Locations</h3>
-          <p className="text-muted mb-4">Click on any location type to view detailed information</p>
+          <h3 className="mb-3">📍 Emplacements</h3>
+          <p className="text-muted mb-4">Cliquez sur n'importe quel type d'emplacement pour voir les informations détaillées</p>
         </Col>
       </Row>
       <Row className="justify-content-center">
         <LocationCard 
-          title="TDL Sites" 
+          title="Sites TDL" 
           count={stats.tdl} 
           variant="primary"
-          description="Total Distribution Locations - View all TDL sites and their detailed information"
+          description="Emplacements de Distribution Totaux - Voir tous les sites TDL et leurs informations détaillées"
           icon="🏢"
           onClick={() => navigate('/locations/tdl')}
         />
         <LocationCard 
-          title="TSF Facilities" 
+          title="Installations TSF" 
           count={stats.tsf} 
           variant="info"
-          description="Technical Service Facilities - Manage and monitor service locations"
+          description="Installations de Service Technique - Gérer et surveiller les emplacements de service"
           icon="🔧"
           onClick={() => navigate('/locations/tsf')}
         />
@@ -152,65 +152,65 @@ const Dashboard = () => {
 
       <Row>
         <Col>
-          <h3 className="mb-3">Equipment</h3>
+          <h3 className="mb-3">Équipement</h3>
         </Col>
       </Row>
       <Row>
         <StatCard 
-          title="AC Equipment" 
+          title="Équipement AC" 
           count={stats.ac} 
           variant="success"
-          description="UPS and OND systems"
+          description="Systèmes UPS et OND"
         />
         <StatCard 
-          title="DC Equipment" 
+          title="Équipement DC" 
           count={stats.dc} 
           variant="warning"
-          description="Batteries and DC systems"
+          description="Batteries et systèmes DC"
         />
         <StatCard 
-          title="HVAC Systems" 
+          title="Systèmes HVAC" 
           count={stats.hvac} 
           variant="danger"
-          description="Cooling and climate control"
+          description="Refroidissement et contrôle climatique"
         />
         <StatCard 
-          title="Generators & TSW" 
+          title="Générateurs & TSW" 
           count={stats.genTsw} 
           variant="dark"
-          description="Power generation equipment"
+          description="Équipement de génération d'énergie"
         />
         <StatCard 
-          title="Other Equipment" 
+          title="Autres Équipements" 
           count={stats.autre} 
           variant="secondary"
-          description="Miscellaneous infrastructure"
+          description="Infrastructure divers"
         />
       </Row>
 
       <Row>
         <Col>
-          <h3 className="mb-3">Management</h3>
+          <h3 className="mb-3">Gestion</h3>
         </Col>
       </Row>
       <Row>
         <StatCard 
-          title="Requirements" 
+          title="Besoins" 
           count={stats.besoin} 
           variant="primary"
-          description="Infrastructure needs"
+          description="Besoins d'infrastructure"
         />
         <StatCard 
-          title="Suppliers" 
+          title="Fournisseurs" 
           count={stats.fournisseurs} 
           variant="info"
-          description="Equipment suppliers"
+          description="Fournisseurs d'équipement"
         />
         <StatCard 
-          title="Manufacturers" 
+          title="Fabricants" 
           count={stats.fabricant} 
           variant="success"
-          description="Equipment manufacturers"
+          description="Fabricants d'équipement"
         />
       </Row>
     </div>

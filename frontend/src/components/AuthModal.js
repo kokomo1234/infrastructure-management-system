@@ -27,7 +27,7 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
     e.preventDefault();
     
     if (!credentials.username || !credentials.password) {
-      setError('Please enter both username and password');
+      setError('Veuillez saisir le nom d\'utilisateur et le mot de passe');
       return;
     }
 
@@ -42,7 +42,7 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
         onSuccess?.();
         onHide();
       } else {
-        setError(result.error || 'Authentication failed');
+        setError(result.error || 'Échec de l\'authentification');
       }
       
       setLoading(false);
@@ -67,13 +67,13 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
     >
       <Modal.Header closeButton className="bg-warning text-dark">
         <Modal.Title>
-          🔐 Authentication Required
+          🔐 Authentification Requise
         </Modal.Title>
       </Modal.Header>
       
       <Modal.Body>
         <Alert variant="info" className="small mb-3">
-          <strong>Security Notice:</strong> You need admin credentials to {action} database records.
+          <strong>Avis de Sécurité :</strong> Vous avez besoin des identifiants administrateur pour {action === 'edit' ? 'modifier' : action === 'delete' ? 'supprimer' : action === 'create' ? 'créer' : action} les enregistrements de la base de données.
         </Alert>
 
         {error && (
@@ -84,10 +84,10 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
 
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
-            <Form.Label className="small fw-bold">Username</Form.Label>
+            <Form.Label className="small fw-bold">Nom d'utilisateur</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Enter username"
+              placeholder="Saisir le nom d'utilisateur"
               value={credentials.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               onKeyPress={handleKeyPress}
@@ -98,10 +98,10 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label className="small fw-bold">Password</Form.Label>
+            <Form.Label className="small fw-bold">Mot de passe</Form.Label>
             <Form.Control
               type="password"
-              placeholder="Enter password"
+              placeholder="Saisir le mot de passe"
               value={credentials.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               onKeyPress={handleKeyPress}
@@ -126,10 +126,10 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
                     role="status"
                     className="me-2"
                   />
-                  Authenticating...
+                  Authentification...
                 </>
               ) : (
-                `🔓 Authenticate & ${action.charAt(0).toUpperCase() + action.slice(1)}`
+                `🔓 Authentifier & ${action === 'edit' ? 'Modifier' : action === 'delete' ? 'Supprimer' : action === 'create' ? 'Créer' : action.charAt(0).toUpperCase() + action.slice(1)}`
               )}
             </Button>
             
@@ -139,16 +139,16 @@ const AuthModal = ({ show, onHide, onSuccess, action = 'edit' }) => {
               disabled={loading}
               size="sm"
             >
-              Cancel
+              Annuler
             </Button>
           </div>
         </Form>
 
         <div className="mt-3 text-center">
           <small className="text-muted">
-            💡 <strong>Demo Credentials:</strong><br/>
-            Username: <code>admin</code><br/>
-            Password: <code>infra2024!</code>
+            💡 <strong>Identifiants de Démo :</strong><br/>
+            Nom d'utilisateur : <code>admin</code><br/>
+            Mot de passe : <code>infra2024!</code>
           </small>
         </div>
       </Modal.Body>
