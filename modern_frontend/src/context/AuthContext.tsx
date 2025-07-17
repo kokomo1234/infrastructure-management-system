@@ -31,21 +31,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check if user is already logged in
     const checkAuth = async () => {
+      console.log('🔍 AuthContext: Starting authentication check...');
       try {
         const token = TokenManager.getToken();
+        console.log('🔑 AuthContext: Token check:', token ? 'Token found' : 'No token');
+        
         if (token && !TokenManager.isTokenExpired(token)) {
+          console.log('✅ AuthContext: Token is valid, fetching user...');
           // Get current user from API
           const currentUser = await apiService.getCurrentUser();
+          console.log('👤 AuthContext: User fetched successfully:', currentUser.email);
           setUser(currentUser);
         } else {
+          console.log('❌ AuthContext: Token expired or invalid, clearing tokens');
           // Clear expired or invalid tokens
           TokenManager.clearTokens();
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('💥 AuthContext: Auth check failed:', error);
         TokenManager.clearTokens();
         setUser(null);
       } finally {
+        console.log('🏁 AuthContext: Authentication check complete');
         setIsLoading(false);
       }
     };
@@ -54,21 +61,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    console.log('🔐 AuthContext: Starting login process for:', email);
     try {
       setIsLoading(true);
       
       const credentials: LoginRequest = { email, password };
+      console.log('📤 AuthContext: Sending login request...');
       const response = await apiService.login(credentials);
       
+      console.log('✅ AuthContext: Login successful for user:', response.user.email);
       setUser(response.user);
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('💥 AuthContext: Login failed:', error);
       TokenManager.clearTokens();
       setUser(null);
       return false;
     } finally {
       setIsLoading(false);
+      console.log('🏁 AuthContext: Login process complete');
     }
   };
 

@@ -156,6 +156,9 @@ class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    // Debug logging
+    console.log('🔍 API Request:', { url, method: options.method || 'GET', endpoint });
+    
     // Get token and add to headers if available
     const token = TokenManager.getToken();
     const headers: Record<string, string> = {
@@ -165,44 +168,60 @@ class ApiService {
 
     if (token) {
       headers.Authorization = `Bearer ${token}`;
+      console.log('🔑 Token present:', token.substring(0, 20) + '...');
+    } else {
+      console.log('❌ No token available');
     }
     
-    const response = await fetch(url, {
-      headers,
-      ...options,
-    });
+    try {
+      const response = await fetch(url, {
+        headers,
+        ...options,
+      });
 
-    // Handle 401 Unauthorized - try to refresh token
-    if (response.status === 401 && token) {
-      const refreshed = await this.refreshToken();
-      if (refreshed) {
-        // Retry the original request with new token
-        const newToken = TokenManager.getToken();
-        if (newToken) {
-          headers.Authorization = `Bearer ${newToken}`;
-          const retryResponse = await fetch(url, {
-            headers,
-            ...options,
-          });
-          
-          if (retryResponse.ok) {
-            return retryResponse.json();
+      console.log('📡 Response status:', response.status, response.statusText);
+
+      // Handle 401 Unauthorized - try to refresh token
+      if (response.status === 401 && token) {
+        console.log('🔄 Attempting token refresh...');
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          // Retry the original request with new token
+          const newToken = TokenManager.getToken();
+          if (newToken) {
+            headers.Authorization = `Bearer ${newToken}`;
+            console.log('🔄 Retrying with new token...');
+            const retryResponse = await fetch(url, {
+              headers,
+              ...options,
+            });
+            
+            if (retryResponse.ok) {
+              console.log('✅ Retry successful');
+              return retryResponse.json();
+            }
           }
         }
+        
+        // If refresh failed or retry failed, clear tokens and redirect to login
+        console.log('❌ Token refresh failed, redirecting to login');
+        TokenManager.clearTokens();
+        window.location.href = '/login';
+        throw new Error('Authentication failed');
       }
-      
-      // If refresh failed or retry failed, clear tokens and redirect to login
-      TokenManager.clearTokens();
-      window.location.href = '/login';
-      throw new Error('Authentication failed');
-    }
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-    }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ API Error:', { status: response.status, error: errorData });
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
 
-    return response.json();
+      console.log('✅ API Request successful');
+      return response.json();
+    } catch (error) {
+      console.error('💥 API Request failed:', error);
+      throw error;
+    }
   }
 
   private async refreshToken(): Promise<boolean> {

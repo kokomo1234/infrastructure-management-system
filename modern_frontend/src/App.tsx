@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Pages
 import Index from "@/pages/Index";
@@ -29,40 +30,42 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <Router>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Index />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="sites" element={<Sites />} />
-                <Route path="equipment" element={<Equipment />} />
-                <Route path="work-orders" element={<WorkOrders />} />
-                <Route path="maintenance" element={<Maintenance />} />
-                <Route path="administration" element={<Administration />} />
-                <Route path="settings" element={<Settings />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
-          <Toaster 
-            position="top-right" 
-            richColors 
-            closeButton
-            toastOptions={{
-              duration: 4000,
-            }}
-          />
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <Router>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<Index />} />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="sites" element={<Sites />} />
+                  <Route path="equipment" element={<Equipment />} />
+                  <Route path="work-orders" element={<WorkOrders />} />
+                  <Route path="maintenance" element={<Maintenance />} />
+                  <Route path="administration" element={<Administration />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+            <Toaster 
+              position="top-right" 
+              richColors 
+              closeButton
+              toastOptions={{
+                duration: 4000,
+              }}
+            />
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
