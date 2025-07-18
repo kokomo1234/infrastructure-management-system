@@ -1,5 +1,5 @@
 [build]
-  # Build command
+  # Build command - Force deployment trigger
   command = "npm run build"
   
   # Directory to publish (Vite builds to 'dist')
