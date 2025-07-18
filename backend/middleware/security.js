@@ -173,8 +173,8 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      'https://hamcjuca.com',
-      'https://www.hamcjuca.com',
+      'https://hamciuca.com',
+      'https://www.hamciuca.com',
       process.env.FRONTEND_URL
     ].filter(Boolean);
 
