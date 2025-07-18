@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       TokenManager.clearTokens();
       setUser(null);
       setIsLoading(false);
-      navigate('/login');
+      navigate('/login', { replace: true });
     }
   };
 
