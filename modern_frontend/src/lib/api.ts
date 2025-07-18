@@ -133,8 +133,8 @@ export interface Migration {
 
 export interface AuthResponse {
   token: string;
-  refreshToken: string;
   user: User;
+  message?: string;
 }
 
 export interface LoginRequest {
@@ -225,31 +225,17 @@ class ApiService {
   }
 
   private async refreshToken(): Promise<boolean> {
+    // Our backend doesn't support refresh tokens, so we'll just check if current token is valid
     try {
-      const refreshToken = TokenManager.getRefreshToken();
-      if (!refreshToken) return false;
-
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        TokenManager.setToken(data.token);
-        if (data.refreshToken) {
-          TokenManager.setRefreshToken(data.refreshToken);
-        }
-        return true;
+      const token = TokenManager.getToken();
+      if (!token || TokenManager.isTokenExpired(token)) {
+        return false;
       }
+      return true;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      console.error('Token validation failed:', error);
+      return false;
     }
-    
-    return false;
   }
 
   // Authentication methods
@@ -260,7 +246,6 @@ class ApiService {
     });
     
     TokenManager.setToken(response.token);
-    TokenManager.setRefreshToken(response.refreshToken);
     
     return response;
   }
@@ -272,7 +257,6 @@ class ApiService {
     });
     
     TokenManager.setToken(response.token);
-    TokenManager.setRefreshToken(response.refreshToken);
     
     return response;
   }

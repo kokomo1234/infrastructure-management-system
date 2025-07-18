@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const AuthContext = createContext();
+
+// API Base URL configuration
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://infrastructure-management-system-production.up.railway.app/api';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -13,68 +16,129 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authToken, setAuthToken] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Performance: Use useCallback to prevent unnecessary re-renders
-  const login = useCallback((credentials) => {
-    // Secure credential check using environment variables only
-    const validCredentials = {
-      username: process.env.REACT_APP_ADMIN_USERNAME,
-      password: process.env.REACT_APP_ADMIN_PASSWORD
-    };
+  // JWT Authentication login
+  const login = useCallback(async (credentials) => {
+    try {
+      console.log('🔐 Attempting login with JWT authentication...');
+      
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: credentials.email || credentials.username,
+          password: credentials.password
+        })
+      });
 
-    // Ensure environment variables are set
-    if (!validCredentials.username || !validCredentials.password) {
-      console.error('❌ Admin credentials not configured. Please set REACT_APP_ADMIN_USERNAME and REACT_APP_ADMIN_PASSWORD in .env file.');
-      return { success: false, error: 'Configuration d\'authentification manquante' };
-    }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erreur de connexion' }));
+        console.error('❌ Login failed:', errorData);
+        return { success: false, error: errorData.message || 'Erreur de connexion' };
+      }
 
-    if (credentials.username === validCredentials.username && 
-        credentials.password === validCredentials.password) {
-      const token = btoa(`${credentials.username}:${Date.now()}`);
-      setAuthToken(token);
+      const data = await response.json();
+      console.log('✅ Login successful:', data);
+      
+      // Store JWT token and user data
+      setAuthToken(data.token);
+      setUser(data.user);
       setIsAuthenticated(true);
       
-      // Performance: Store in sessionStorage (faster than localStorage)
-      sessionStorage.setItem('authToken', token);
-      sessionStorage.setItem('authTime', Date.now().toString());
+      // Store in localStorage for persistence
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       
-      return { success: true };
+      return { success: true, user: data.user };
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      return { success: false, error: 'Erreur de connexion au serveur' };
     }
-    
-    return { success: false, error: 'Invalid credentials' };
   }, []);
 
-  const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    setAuthToken(null);
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('authTime');
-  }, []);
+  // JWT Authentication logout
+  const logout = useCallback(async () => {
+    try {
+      // Call logout endpoint if token exists
+      if (authToken) {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          }
+        }).catch(() => {}); // Ignore errors on logout
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local state and storage
+      setIsAuthenticated(false);
+      setAuthToken(null);
+      setUser(null);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      console.log('🚪 User logged out');
+    }
+  }, [authToken]);
 
-  // Performance: Check if session is still valid (30 minutes)
-  const checkAuthStatus = useCallback(() => {
-    const token = sessionStorage.getItem('authToken');
-    const authTime = sessionStorage.getItem('authTime');
-    
-    if (token && authTime) {
-      const timeDiff = Date.now() - parseInt(authTime);
-      const thirtyMinutes = 30 * 60 * 1000;
+  // Check authentication status on app load
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const userData = localStorage.getItem('user');
       
-      if (timeDiff < thirtyMinutes) {
+      if (!token) {
+        setLoading(false);
+        return false;
+      }
+
+      // Verify token with backend
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const profileData = await response.json();
         setAuthToken(token);
+        setUser(profileData.user);
         setIsAuthenticated(true);
+        console.log('✅ Authentication restored:', profileData.user);
+        setLoading(false);
         return true;
       } else {
-        // Session expired
-        logout();
+        // Token is invalid, clear storage
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        setLoading(false);
+        return false;
       }
+    } catch (error) {
+      console.error('❌ Auth check error:', error);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      setLoading(false);
+      return false;
     }
-    return false;
-  }, [logout]);
+  }, []);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const value = {
     isAuthenticated,
     authToken,
+    user,
+    loading,
     login,
     logout,
     checkAuthStatus

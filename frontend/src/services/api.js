@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://infrastructure-management-system-production.up.railway.app/api';
 
 // API configuration loaded from environment variables
 if (process.env.NODE_ENV === 'development') {
@@ -129,6 +129,15 @@ const apiService = {
     create: (data) => api.post('/fabricant', data),
     update: (id, data) => api.put(`/fabricant/${id}`, data),
     delete: (id) => api.delete(`/fabricant/${id}`),
+  },
+
+  // Authentication endpoints
+  auth: {
+    login: (credentials) => api.post('/auth/login', credentials),
+    register: (userData) => api.post('/auth/register', userData),
+    logout: () => api.post('/auth/logout'),
+    profile: () => api.get('/auth/profile'),
+    refresh: () => api.post('/auth/refresh'),
   },
 
   // Health check
