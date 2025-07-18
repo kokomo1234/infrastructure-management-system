@@ -32,7 +32,7 @@ dist-ssr
 
 # Build outputs
 build/
-dist/
+# dist/ - Allow dist for Netlify deployment
 
 # Dependencies
 node_modules/
