@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ProductionDebugger } from "@/components/debug/ProductionDebugger";
 
 // Pages
 import Index from "@/pages/Index";
@@ -62,6 +63,7 @@ function App() {
                 duration: 4000,
               }}
             />
+            <ProductionDebugger />
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
