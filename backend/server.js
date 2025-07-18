@@ -40,9 +40,10 @@ app.use('/api', apiLimiter); // General API rate limiting
 
 // Public routes (no authentication required)
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/db-init', require('./routes/db-init')); // Database initialization API
+app.use('/api/db-init', require('./routes/db-init')); // Custom API routes for database operations
 app.use('/api/db-diagnostic', require('./routes/db-diagnostic')); // Database diagnostic API
 app.use('/api/admin-bootstrap', require('./routes/admin-bootstrap')); // Admin bootstrap API
+app.use('/api/create-users-table', require('./routes/create-users-table')); // Admin bootstrap API
 
 // Health check endpoint (public)
 app.get('/api/health', (req, res) => {
