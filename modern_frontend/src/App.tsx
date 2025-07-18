@@ -34,8 +34,8 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <AuthProvider>
-            <Router>
+          <Router>
+            <AuthProvider>
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Index />} />
@@ -54,17 +54,17 @@ function App() {
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Router>
-            <Toaster 
-              position="top-right" 
-              richColors 
-              closeButton
-              toastOptions={{
-                duration: 4000,
-              }}
-            />
-            <ProductionDebugger />
-          </AuthProvider>
+              <Toaster 
+                position="top-right" 
+                richColors 
+                closeButton
+                toastOptions={{
+                  duration: 4000,
+                }}
+              />
+              <ProductionDebugger />
+            </AuthProvider>
+          </Router>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
