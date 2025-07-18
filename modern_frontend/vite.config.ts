@@ -17,6 +17,7 @@ export default defineConfig({
         target: 'https://infrastructure-management-system-production.up.railway.app',
         changeOrigin: true,
         secure: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
       }
     }
   }

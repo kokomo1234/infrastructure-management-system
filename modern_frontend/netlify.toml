@@ -11,6 +11,8 @@
   VITE_API_URL = "https://infrastructure-management-system-production.up.railway.app/api"
   VITE_APP_NAME = "Système de Gestion d'Infrastructure"
   VITE_APP_VERSION = "1.0.0"
+  # Disable Next.js plugin for Vite React project
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 # SPA routing - redirect all routes to index.html
 [[redirects]]

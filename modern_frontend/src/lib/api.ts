@@ -1,7 +1,23 @@
 // API Configuration
-const API_BASE_URL = process.env.NODE_ENV === 'production'
+// Use a more robust way to detect production environment
+const isProduction = typeof window !== 'undefined' && 
+  (window.location.hostname === 'hamciuca.com' || 
+   window.location.hostname.includes('netlify.app') ||
+   !window.location.hostname.includes('localhost'));
+
+const API_BASE_URL = isProduction
   ? 'https://infrastructure-management-system-production.up.railway.app/api'
   : '/api';
+
+// Debug logging for API configuration
+if (typeof window !== 'undefined') {
+  console.log('🔧 API Configuration:', {
+    hostname: window.location.hostname,
+    isProduction,
+    API_BASE_URL,
+    nodeEnv: process.env.NODE_ENV
+  });
+}
 
 // Token management
 class TokenManager {
@@ -9,24 +25,56 @@ class TokenManager {
   private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
 
   static getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    try {
+      return typeof window !== 'undefined' && window.localStorage 
+        ? localStorage.getItem(this.TOKEN_KEY) 
+        : null;
+    } catch (error) {
+      console.warn('Failed to get token from localStorage:', error);
+      return null;
+    }
   }
 
   static setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(this.TOKEN_KEY, token);
+      }
+    } catch (error) {
+      console.warn('Failed to set token in localStorage:', error);
+    }
   }
 
   static getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    try {
+      return typeof window !== 'undefined' && window.localStorage 
+        ? localStorage.getItem(this.REFRESH_TOKEN_KEY) 
+        : null;
+    } catch (error) {
+      console.warn('Failed to get refresh token from localStorage:', error);
+      return null;
+    }
   }
 
   static setRefreshToken(token: string): void {
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+      }
+    } catch (error) {
+      console.warn('Failed to set refresh token in localStorage:', error);
+    }
   }
 
   static clearTokens(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      }
+    } catch (error) {
+      console.warn('Failed to clear tokens from localStorage:', error);
+    }
   }
 
   static isTokenExpired(token: string): boolean {
