@@ -68,11 +68,32 @@ router.post('/create', async (req, res) => {
     
     console.log('Creating admin user...');
     
-    // Use password_hash column (detected from earlier logs)
-    const [result] = await db.execute(`
-      INSERT INTO users (email, password_hash, first_name, last_name, department, position, is_active)
+    // Dynamically detect the correct password column name
+    const [passwordColumns] = await db.execute(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND COLUMN_NAME IN ('password', 'password_hash')
+    `);
+    
+    let passwordColumn = 'password_hash'; // default
+    if (passwordColumns.length > 0) {
+      passwordColumn = passwordColumns[0].COLUMN_NAME;
+      console.log('Detected password column:', passwordColumn);
+    } else {
+      console.log('No password column found, using default:', passwordColumn);
+    }
+    
+    // Build INSERT query with detected column name
+    const insertQuery = `
+      INSERT INTO users (email, ${passwordColumn}, first_name, last_name, department, position, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
+    `;
+    
+    console.log('Executing INSERT query:', insertQuery);
+    
+    const [result] = await db.execute(insertQuery, [
       'admin@infrastructure.com',
       hashedPassword,
       'Admin',
