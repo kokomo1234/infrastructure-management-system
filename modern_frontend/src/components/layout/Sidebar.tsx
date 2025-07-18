@@ -14,13 +14,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navigation = [
-  { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Sites', href: '/sites', icon: Building2 },
-  { name: 'Équipements', href: '/equipment', icon: Wrench },
-  { name: 'Ordres de travail', href: '/work-orders', icon: ClipboardList },
-  { name: 'Maintenance', href: '/maintenance', icon: Calendar },
-  { name: 'Administration', href: '/administration', icon: Shield },
-  { name: 'Paramètres', href: '/settings', icon: Settings },
+  { name: 'Tableau de bord', href: '/app/dashboard', icon: LayoutDashboard },
+  { name: 'Sites', href: '/app/sites', icon: Building2 },
+  { name: 'Équipements', href: '/app/equipment', icon: Wrench },
+  { name: 'Ordres de travail', href: '/app/work-orders', icon: ClipboardList },
+  { name: 'Maintenance', href: '/app/maintenance', icon: Calendar },
+  { name: 'Administration', href: '/app/administration', icon: Shield },
+  { name: 'Paramètres', href: '/app/settings', icon: Settings },
 ];
 
 export const Sidebar = () => {
@@ -69,7 +69,7 @@ export const Sidebar = () => {
           </div>
           <div className="ml-3 min-w-0 flex-1">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {user?.display_name || `${user?.first_name} ${user?.last_name}` || user?.email}
+              {`${user?.first_name} ${user?.last_name}`.trim() || user?.email}
             </p>
             <p className="text-xs text-gray-500 truncate">
               {user?.department || 'Infrastructure'}

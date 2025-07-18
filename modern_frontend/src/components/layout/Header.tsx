@@ -45,7 +45,7 @@ export const Header = () => {
             </div>
             <div className="hidden md:block">
               <p className="text-sm font-medium text-gray-900">
-                {user?.display_name || `${user?.first_name} ${user?.last_name}` || user?.email}
+                {`${user?.first_name} ${user?.last_name}`.trim() || user?.email}
               </p>
               <p className="text-xs text-gray-500">
                 {user?.position || 'Gestionnaire'}
