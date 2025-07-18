@@ -10,6 +10,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Disable minification to prevent code mangling issues
+    minify: false,
+    // Disable code splitting to prevent module loading issues
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+    // Disable source maps for production debugging
+    sourcemap: false,
+    // Target modern browsers to avoid polyfill issues
+    target: 'esnext',
+  },
   server: {
     port: 3000,
     proxy: {
