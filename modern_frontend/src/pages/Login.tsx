@@ -17,7 +17,7 @@ const Login = () => {
   
   // Redirect if already authenticated
   if (isAuthenticated) {
-    const from = location.state?.from?.pathname || '/dashboard';
+    const from = location.state?.from?.pathname || '/app/dashboard';
     return <Navigate to={from} replace />;
   }
 
@@ -35,7 +35,7 @@ const Login = () => {
       toast.success('Connexion réussie');
       
       // Redirect to intended page or dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
+      const from = location.state?.from?.pathname || '/app/dashboard';
       window.location.href = from;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Erreur de connexion');
