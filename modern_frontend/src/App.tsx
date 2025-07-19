@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -39,6 +39,14 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Index />} />
+                {/* Legacy route redirects */}
+                <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/sites" element={<Navigate to="/app/sites" replace />} />
+                <Route path="/equipment" element={<Navigate to="/app/equipment" replace />} />
+                <Route path="/work-orders" element={<Navigate to="/app/work-orders" replace />} />
+                <Route path="/maintenance" element={<Navigate to="/app/maintenance" replace />} />
+                <Route path="/administration" element={<Navigate to="/app/administration" replace />} />
+                <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
                 <Route path="/app" element={
                   <ProtectedRoute>
                     <AppLayout />
