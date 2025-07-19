@@ -8,7 +8,7 @@ import { formatCapacity, calculateUtilization, getUtilizationColor, getStatusCol
 const Dashboard = () => {
   // Fetch data from backend
   const { data: tdlSites, isLoading: tdlLoading } = useQuery({
-    queryKey: ['tdl-sites'],
+    queryKey: ['dashboard', 'tdl-sites'],
     queryFn: async () => {
       try {
         console.log('🔍 Dashboard: Fetching TDL sites...');
@@ -25,7 +25,7 @@ const Dashboard = () => {
   });
 
   const { data: acEquipment, isLoading: acLoading } = useQuery({
-    queryKey: ['ac-equipment'],
+    queryKey: ['dashboard', 'ac-equipment'],
     queryFn: async () => {
       try {
         console.log('🔍 Dashboard: Fetching AC equipment...');

@@ -14,13 +14,13 @@ const Sites = () => {
 
   // Fetch data from backend
   const { data: tdlSites, isLoading: tdlLoading } = useQuery({
-    queryKey: ['tdl-sites'],
-    queryFn: () => apiService.getTDLSites().then(res => res.data),
+    queryKey: ['sites', 'tdl-sites'],
+    queryFn: () => apiService.getTDLSites(),
   });
 
   const { data: allACEquipment, isLoading: acLoading } = useQuery({
-    queryKey: ['ac-equipment'],
-    queryFn: () => apiService.getACEquipment().then(res => res.data),
+    queryKey: ['sites', 'ac-equipment'],
+    queryFn: () => apiService.getACEquipment(),
   });
 
   // Filter sites based on search
